@@ -1,4 +1,6 @@
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { LoadingScreen } from './components/ui/LoadingScreen';
 import { AuthProvider } from './context/AuthContext';
 
 import { DashboardLayout } from './components/layout/DashboardLayout';
@@ -28,11 +30,25 @@ function AppRoutes() {
 }
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial loading (e.g., waiting for assets/auth)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <AuthProvider>
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <AppRoutes />
-      </Router>
+      {isLoading ? (
+        <LoadingScreen />
+      ) : (
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AppRoutes />
+        </Router>
+      )}
     </AuthProvider>
   );
 }

@@ -3,13 +3,31 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
   
-  /* Disable pull-to-refresh on mobile browsers */
-  html, body {
-    overscroll-behavior-y: contain;
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+    overscroll-behavior-y: contain; /* Prevent pull-to-refresh */
+    touch-action: pan-x pan-y; /* Allow panning but prevent zoom and other gestures */
+    -webkit-user-select: none; /* Prevent text selection on touch */
+    user-select: none;
+  }
+
+  /* Allow text selection in specific elements */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+    touch-action: manipulation; /* Disable double-tap zoom */
+  }
+
+  /* Smooth scrolling containers */
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  [class*="overflow-auto"] {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 }
 
@@ -98,5 +116,22 @@
   
   .will-change-opacity {
     will-change: opacity;
+  }
+
+  /* Touch action utilities */
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+
+  .touch-none {
+    touch-action: none;
+  }
+
+  .touch-manipulation {
+    touch-action: manipulation;
   }
 }

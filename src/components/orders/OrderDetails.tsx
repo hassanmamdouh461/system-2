@@ -42,15 +42,9 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
               isMobile 
                 ? 'inset-0 rounded-t-3xl' 
                 : 'right-0 top-0 bottom-0 w-full max-w-md rounded-none'
-            } bg-white shadow-2xl z-50 flex flex-col`}
+            } bg-white shadow-2xl z-50 flex flex-col touch-pan-y`}
             style={{ willChange: 'transform' }}
             {...(isMobile ? swipeHandlers : {})}
-            onTouchMove={(e) => {
-              // Prevent scroll propagation when swiping
-              if (isMobile) {
-                e.stopPropagation();
-              }
-            }}
           >
             {/* Swipe Indicator - Mobile Only */}
             {isMobile && (

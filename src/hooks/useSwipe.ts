@@ -18,6 +18,7 @@ export function useSwipe(handlers: SwipeHandlers, config: SwipeConfig = {}) {
   // Reduced thresholds for better mobile responsiveness
   const { minSwipeDistance = 30, maxSwipeTime = 300 } = config;
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
+  const [isSwiping, setIsSwiping] = useState(false);
 
   const onTouchStart = (e: TouchEvent) => {
     const touch = e.touches[0];
@@ -26,6 +27,20 @@ export function useSwipe(handlers: SwipeHandlers, config: SwipeConfig = {}) {
       y: touch.clientY,
       time: Date.now(),
     });
+    setIsSwiping(false);
+  };
+
+  const onTouchMove = (e: TouchEvent) => {
+    if (!touchStart) return;
+
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStart.x);
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+
+    // Mark as swiping if movement exceeds threshold
+    if (deltaX > 10 || deltaY > 10) {
+      setIsSwiping(true);
+    }
   };
 
   const onTouchEnd = (e: TouchEvent) => {
@@ -70,10 +85,12 @@ export function useSwipe(handlers: SwipeHandlers, config: SwipeConfig = {}) {
     }
 
     setTouchStart(null);
+    setIsSwiping(false);
   };
 
   return {
     onTouchStart,
+    onTouchMove,
     onTouchEnd,
   };
 }

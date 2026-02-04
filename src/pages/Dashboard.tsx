@@ -21,41 +21,41 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500">Welcome back, here's what's happening today.</p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm md:text-base text-gray-500">Welcome back, here's what's happening today.</p>
         </div>
-        <div className="text-right">
+        <div className="text-left md:text-right">
           <p className="text-sm text-gray-500">Today's Date</p>
-          <p className="font-semibold text-gray-900">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p className="font-semibold text-gray-900 text-sm md:text-base">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Grid - 2 cols on mobile, 4 on desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {stats.map((stat, index) => (
           <StatCard key={index} {...stat} />
         ))}
       </div>
 
       {/* Quick Actions Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-base md:text-lg font-bold text-gray-900 mb-4 md:mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
             {quickActions.map((action, index) => {
               const Icon = action.icon;
               return (
                 <button
                   key={index}
                   onClick={() => navigate(action.path)}
-                  className={`${action.color} ${action.hover} text-white p-6 rounded-xl flex flex-col items-center justify-center gap-3 transition-colors shadow-lg shadow-gray-200 transform hover:scale-105 active:scale-95 transition-transform`}
+                  className={`mobile-touch-target ${action.color} ${action.hover} text-white p-4 md:p-6 rounded-xl flex flex-col items-center justify-center gap-2 md:gap-3 transition-all shadow-lg shadow-gray-200 active:scale-95 tap-highlight-none`}
                 >
-                  <Icon className="w-8 h-8" />
-                  <span className="font-semibold">{action.label}</span>
+                  <Icon className="w-6 h-6 md:w-8 md:h-8" />
+                  <span className="font-semibold text-sm md:text-base">{action.label}</span>
                 </button>
               );
             })}
@@ -63,8 +63,8 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Activity Placeholder */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h2>
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-base md:text-lg font-bold text-gray-900 mb-4 md:mb-6">Recent Activity</h2>
           <div className="space-y-4">
              <div className="text-gray-500 text-sm">Recent activity feed loading...</div>
           </div>

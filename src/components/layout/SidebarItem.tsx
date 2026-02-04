@@ -9,12 +9,14 @@ interface SidebarItemProps {
   label: string;
   to: string;
   collapsed?: boolean;
+  onClick?: () => void;
 }
 
-export function SidebarItem({ icon: Icon, label, to, collapsed }: SidebarItemProps) {
+export function SidebarItem({ icon: Icon, label, to, collapsed, onClick }: SidebarItemProps) {
   return (
     <NavLink
       to={to}
+      onClick={onClick}
       className={({ isActive }) =>
         clsx(
           "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group relative",

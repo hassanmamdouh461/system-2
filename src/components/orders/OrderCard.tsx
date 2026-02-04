@@ -68,8 +68,8 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
           : "bg-white/90 backdrop-blur-sm shadow-md hover:shadow-xl border border-gray-200/50 hover:border-gray-300/50"
       )}
     >
-      {/* Gradient overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-50/0 to-pink-50/0 group-hover:from-orange-50/30 group-hover:to-pink-50/30 transition-all duration-300 pointer-events-none rounded-2xl" />
+      {/* Soft gradient overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-50/0 to-pink-50/0 group-hover:from-orange-50/20 group-hover:to-pink-50/20 transition-all duration-300 pointer-events-none rounded-2xl" />
 
       {/* Content */}
       <div className="relative z-10">
@@ -82,12 +82,12 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
             </span>
           </div>
           
-          {/* Status badge with gradient */}
+          {/* Status badge - softer */}
           <div className={clsx(
             "px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm border",
             colors.bg,
             colors.text,
-            "border-current/20"
+            "border-current/10"
           )}>
             <StatusIcon size={14} className={colors.icon} />
             {order.status}
@@ -99,7 +99,7 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
           {order.items.slice(0, 3).map((item, idx) => (
             <div key={idx} className="flex justify-between text-sm items-center">
               <span className="text-gray-600">
-                <span className="inline-flex items-center justify-center min-w-[24px] h-6 rounded-lg bg-gradient-to-br from-orange-100 to-pink-100 text-orange-700 font-bold text-xs mr-2 px-1.5">
+                <span className="inline-flex items-center justify-center min-w-[24px] h-6 rounded-lg bg-orange-50 text-orange-600 font-bold text-xs mr-2 px-1.5 border border-orange-100/50">
                   {item.quantity}×
                 </span>
                 {item.name}
@@ -123,7 +123,7 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
               {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
-          <span className="font-bold text-lg bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+          <span className="font-bold text-lg text-orange-600">
             ${order.totalAmount.toFixed(2)}
           </span>
         </div>

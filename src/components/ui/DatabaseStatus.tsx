@@ -98,15 +98,15 @@ export function DatabaseStatus() {
               {config.description}
             </p>
             
-            {/* Connection Details */}
+            {/* Connection Status Info - No Sensitive Data */}
             <div className="space-y-1 text-xs text-gray-500">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium">Endpoint:</span>
-                <span className="truncate">{APPWRITE_CONFIG.ENDPOINT}</span>
+                <span className="font-medium">Region:</span>
+                <span>Frankfurt (fra)</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium">Project ID:</span>
-                <span className="font-mono truncate">{APPWRITE_CONFIG.PROJECT_ID}</span>
+                <span className="font-medium">Database:</span>
+                <span className="font-mono">restaurant_db</span>
               </div>
               {lastChecked && (
                 <div className="flex items-center gap-2">

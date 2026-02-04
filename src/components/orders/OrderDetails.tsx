@@ -28,20 +28,29 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+            style={{ willChange: 'opacity' }}
           />
           <motion.div
             initial={isMobile ? { y: '100%' } : { x: '100%' }}
             animate={isMobile ? { y: 0 } : { x: 0 }}
             exit={isMobile ? { y: '100%' } : { x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={`fixed ${
               isMobile 
                 ? 'inset-0 rounded-t-3xl' 
                 : 'right-0 top-0 bottom-0 w-full max-w-md rounded-none'
             } bg-white shadow-2xl z-50 flex flex-col`}
+            style={{ willChange: 'transform' }}
             {...(isMobile ? swipeHandlers : {})}
+            onTouchMove={(e) => {
+              // Prevent scroll propagation when swiping
+              if (isMobile) {
+                e.stopPropagation();
+              }
+            }}
           >
             {/* Swipe Indicator - Mobile Only */}
             {isMobile && (

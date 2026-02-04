@@ -115,9 +115,10 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.15 }}
               onClick={onMobileClose}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+              style={{ willChange: 'opacity' }}
             />
             
             {/* Drawer */}
@@ -125,8 +126,9 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
               className="fixed top-0 left-0 bottom-0 w-72 z-50"
+              style={{ willChange: 'transform' }}
             >
               {sidebarContent}
             </motion.div>

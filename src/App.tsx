@@ -36,7 +36,7 @@ function App() {
     // Simulate initial loading (e.g., waiting for assets/auth)
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2500);
+    }, 1500); // Reduced from 2500ms to 1500ms for faster startup
     return () => clearTimeout(timer);
   }, []);
 

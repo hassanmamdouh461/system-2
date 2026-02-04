@@ -15,7 +15,8 @@ interface SwipeConfig {
 }
 
 export function useSwipe(handlers: SwipeHandlers, config: SwipeConfig = {}) {
-  const { minSwipeDistance = 50, maxSwipeTime = 500 } = config;
+  // Reduced thresholds for better mobile responsiveness
+  const { minSwipeDistance = 30, maxSwipeTime = 300 } = config;
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
 
   const onTouchStart = (e: TouchEvent) => {

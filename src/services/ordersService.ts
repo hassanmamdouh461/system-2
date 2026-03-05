@@ -16,15 +16,32 @@ export const ordersService = {
         APPWRITE_CONFIG.COLLECTIONS.ORDERS
       );
 
-      return response.documents.map((doc: any) => ({
-        id: doc.$id,
-        orderNumber: doc.orderNumber,
-        tableId: doc.tableId,
-        items: doc.items,
-        status: doc.status as OrderStatus,
-        totalAmount: doc.totalAmount,
-        createdAt: doc.createdAt,
-      }));
+      return response.documents.map((doc: any) => {
+        // Parse items if it's a string (Appwrite might store it as JSON)
+        let items = doc.items;
+        if (typeof items === 'string') {
+          try {
+            items = JSON.parse(items);
+          } catch (e) {
+            console.error('[ordersService] Failed to parse items:', e);
+            items = [];
+          }
+        }
+        // Ensure items is always an array
+        if (!Array.isArray(items)) {
+          items = [];
+        }
+
+        return {
+          id: doc.$id,
+          orderNumber: doc.orderNumber,
+          tableId: doc.tableId,
+          items: items,
+          status: doc.status as OrderStatus,
+          totalAmount: doc.totalAmount,
+          createdAt: doc.createdAt,
+        };
+      });
     } catch (error) {
       console.error('[ordersService] Error fetching orders:', error);
       throw new Error('Failed to fetch orders');
@@ -43,9 +60,9 @@ export const ordersService = {
         {
           orderNumber: order.orderNumber,
           tableId: order.tableId,
-          items: order.items,
+          items: JSON.stringify(order.items), // Store as JSON string
           status: order.status,
-          totalAmount: order.totalAmount,
+          totalAmount: Number(order.totalAmount),
           createdAt: order.createdAt,
         }
       );
@@ -77,11 +94,21 @@ export const ordersService = {
         { status }
       );
 
+      // Parse items from JSON string
+      let items = response.items;
+      if (typeof items === 'string') {
+        try {
+          items = JSON.parse(items);
+        } catch (e) {
+          items = [];
+        }
+      }
+
       return {
         id: response.$id,
         orderNumber: response.orderNumber,
         tableId: response.tableId,
-        items: response.items,
+        items: items,
         status: response.status,
         totalAmount: response.totalAmount,
         createdAt: response.createdAt,
@@ -97,18 +124,37 @@ export const ordersService = {
    */
   async update(id: string, data: Partial<Omit<Order, 'id'>>): Promise<Order> {
     try {
+      // Clean and prepare data for Appwrite
+      const cleanData: any = {};
+      if (data.orderNumber !== undefined) cleanData.orderNumber = data.orderNumber;
+      if (data.tableId !== undefined) cleanData.tableId = data.tableId;
+      if (data.items !== undefined) cleanData.items = JSON.stringify(data.items);
+      if (data.status !== undefined) cleanData.status = data.status;
+      if (data.totalAmount !== undefined) cleanData.totalAmount = Number(data.totalAmount);
+      if (data.createdAt !== undefined) cleanData.createdAt = data.createdAt;
+
       const response: any = await databases.updateDocument(
         APPWRITE_CONFIG.DB_ID,
         APPWRITE_CONFIG.COLLECTIONS.ORDERS,
         id,
-        data
+        cleanData
       );
+
+      // Parse items from JSON string
+      let items = response.items;
+      if (typeof items === 'string') {
+        try {
+          items = JSON.parse(items);
+        } catch (e) {
+          items = [];
+        }
+      }
 
       return {
         id: response.$id,
         orderNumber: response.orderNumber,
         tableId: response.tableId,
-        items: response.items,
+        items: items,
         status: response.status,
         totalAmount: response.totalAmount,
         createdAt: response.createdAt,

@@ -71,7 +71,7 @@ async function main() {
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'tableId', 50, true);
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'status', 50, true);
         await db.createFloatAttribute(CONFIG.DB_ID, ordersCollId, 'totalAmount', true);
-        await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'items_json', 10000, true); // Storing items as JSON for simplicity in this demo
+        await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'items', 10000, true); // Storing items as JSON string
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'createdAt', 100, true);
         
         console.log('⏳ Waiting for attributes to index...');
@@ -108,7 +108,7 @@ async function main() {
                 tableId: order.tableId,
                 status: order.status,
                 totalAmount: order.totalAmount,
-                items_json: JSON.stringify(order.items),
+                items: JSON.stringify(order.items),
                 createdAt: order.createdAt
             });
             console.log(`   + Added Order: ${order.orderNumber}`);

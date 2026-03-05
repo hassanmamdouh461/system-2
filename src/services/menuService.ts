@@ -70,11 +70,20 @@ export const menuService = {
    */
   async update(id: string, data: Partial<Omit<MenuItem, 'id'>>): Promise<MenuItem> {
     try {
+      // Only send the fields that are allowed in the schema
+      const cleanData: any = {};
+      if (data.name !== undefined) cleanData.name = data.name;
+      if (data.description !== undefined) cleanData.description = data.description;
+      if (data.price !== undefined) cleanData.price = Number(data.price);
+      if (data.category !== undefined) cleanData.category = data.category;
+      if (data.image !== undefined) cleanData.image = data.image;
+      if (data.available !== undefined) cleanData.available = Boolean(data.available);
+
       const response: any = await databases.updateDocument(
         APPWRITE_CONFIG.DB_ID,
         APPWRITE_CONFIG.COLLECTIONS.MENU,
         id,
-        data
+        cleanData
       );
 
       return {

@@ -38,11 +38,6 @@ export default function Payment() {
     o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Show loading state
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
   // Show error state
   if (error) {
     return (

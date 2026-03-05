@@ -70,11 +70,6 @@ export default function Menu() {
     }
   };
 
-  // Show loading state
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
   // Show error state
   if (error) {
     return (

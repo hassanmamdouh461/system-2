@@ -96,7 +96,7 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
 
         {/* Items */}
         <div className="space-y-2 mb-4">
-          {order.items.slice(0, 3).map((item, idx) => (
+          {order.items && order.items.length > 0 ? order.items.slice(0, 3).map((item, idx) => (
             <div key={idx} className="flex justify-between text-sm items-center">
               <span className="text-gray-600">
                 <span className="inline-flex items-center justify-center min-w-[24px] h-6 rounded-lg bg-mocha-50 text-mocha-700 font-bold text-xs mr-2 px-1.5 border border-mocha-100/50">
@@ -105,8 +105,10 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
                 {item.name}
               </span>
             </div>
-          ))}
-          {order.items.length > 3 && (
+          )) : (
+            <div className="text-xs text-gray-400 italic">No items</div>
+          )}
+          {order.items && order.items.length > 3 && (
             <p className="text-xs text-gray-400 italic font-medium pl-9">
               +{order.items.length - 3} more items...
             </p>

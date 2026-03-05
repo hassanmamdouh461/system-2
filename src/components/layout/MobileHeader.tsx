@@ -28,7 +28,7 @@ export function MobileHeader({ onMenuClick }: MobileHeaderProps) {
       {/* Subtle gradient background */}
       <div className="relative bg-gradient-to-r from-mocha-100 via-cream to-caramel-light border-b border-mocha-200/50">
         <div className="bg-white/95 backdrop-blur-xl">
-          <div className="flex items-center justify-between px-4 py-4">
+          <div className="flex items-center justify-between px-3 py-3.5">
             {/* Menu Button */}
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -43,7 +43,7 @@ export function MobileHeader({ onMenuClick }: MobileHeaderProps) {
               key={getPageTitle()}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-lg font-bold text-gray-700"
+              className="text-base font-bold text-gray-800"
             >
               {getPageTitle()}
             </motion.h1>

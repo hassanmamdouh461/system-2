@@ -33,20 +33,20 @@ export default function Reports() {
   const maxSale = Math.max(...salesData.map(d => d.value));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
-          <p className="text-gray-500">Track your cafe performance and growth.</p>
+          <h1 className="text-lg md:text-2xl font-bold text-gray-900">Reports & Analytics</h1>
+          <p className="text-xs md:text-base text-gray-500">Track your cafe performance and growth.</p>
         </div>
-        <div className="flex gap-3">
-           <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <div className="flex gap-2 md:gap-3">
+           <div className="relative flex-1 md:flex-initial">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5 md:w-4 md:h-4" />
               <select 
                 value={dateRange} 
                 onChange={(e) => setDateRange(e.target.value)}
-                className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-caramel"
+                className="w-full pl-8 md:pl-9 pr-3 md:pr-4 py-2 bg-white border border-gray-200 rounded-lg text-xs md:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-caramel"
               >
                 <option>Today</option>
                 <option>This Week</option>
@@ -54,27 +54,28 @@ export default function Reports() {
                 <option>This Year</option>
               </select>
            </div>
-           <button className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-black transition-colors">
-              <Download size={16} /> Export
+           <button className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 bg-gray-900 text-white rounded-lg text-xs md:text-sm font-medium hover:bg-black transition-colors">
+              <Download size={14} className="md:w-4 md:h-4" /> 
+              <span className="hidden sm:inline">Export</span>
            </button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6">
         {stats.map((stat, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
+            className="bg-white p-3 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-gray-100"
           >
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 rounded-xl bg-${stat.color}-50 text-${stat.color}-600`}>
-                <stat.icon size={24} />
+            <div className="flex justify-between items-start mb-2 md:mb-4">
+              <div className={`p-2 md:p-3 rounded-lg md:rounded-xl bg-${stat.color}-50 text-${stat.color}-600`}>
+                <stat.icon size={18} className="md:w-6 md:h-6" />
               </div>
-              <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+              <span className="text-[10px] md:text-xs font-semibold text-green-600 bg-green-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full">
                 {stat.change}
               </span>
             </div>

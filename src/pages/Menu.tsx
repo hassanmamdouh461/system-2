@@ -63,31 +63,31 @@ export default function Menu() {
   };
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-3 md:space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Menu Management</h1>
-          <p className="text-sm md:text-base text-gray-500">Manage your coffee beverages, categories, and availability.</p>
+          <h1 className="text-lg md:text-2xl font-bold text-gray-900">Menu Management</h1>
+          <p className="text-xs md:text-base text-gray-500">Manage your coffee beverages, categories, and availability.</p>
         </div>
         <button 
           onClick={handleAddNew}
-          className="mobile-touch-target bg-mocha-700 hover:bg-mocha-800 text-white px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-mocha-500/20 transition-all active:scale-95 tap-highlight-none w-full md:w-auto"
+          className="mobile-touch-target bg-mocha-700 hover:bg-mocha-800 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-mocha-500/20 transition-all active:scale-95 tap-highlight-none w-full md:w-auto text-sm md:text-base"
         >
-          <Plus size={20} />
+          <Plus size={18} />
           Add New Item
         </button>
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3 sticky top-0 z-10 backdrop-blur-xl bg-white/95">
+      <div className="bg-white p-2 md:p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2 md:gap-3 sticky top-0 z-10 backdrop-blur-xl bg-white/95">
         {/* Categories - Horizontal scroll on mobile */}
-        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1">
+        <div className="flex items-center gap-1.5 md:gap-2 overflow-x-auto hide-scrollbar pb-1">
           {CATEGORIES.map(category => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`mobile-touch-target px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors tap-highlight-none ${
+              className={`mobile-touch-target px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap transition-colors tap-highlight-none ${
                 selectedCategory === category
                   ? 'bg-mocha-700 text-white'
                   : 'bg-mocha-100 text-mocha-800 hover:bg-mocha-200'

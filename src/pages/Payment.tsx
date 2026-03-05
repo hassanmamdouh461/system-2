@@ -36,38 +36,38 @@ export default function Payment() {
   const totalRevenue = 4289.00; // Mock revenue
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Payment & Billing</h1>
-          <p className="text-gray-500">Process customer payments and view daily revenue.</p>
+          <h1 className="text-lg md:text-2xl font-bold text-gray-900">Payment & Billing</h1>
+          <p className="text-xs md:text-base text-gray-500">Process customer payments and view daily revenue.</p>
         </div>
-        <div className="bg-white px-6 py-3 rounded-xl border border-mocha-100 shadow-sm flex items-center gap-3">
-            <div className="p-2 bg-green-50 text-green-600 rounded-lg">
-                <DollarSign size={20} />
+        <div className="bg-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl border border-mocha-100 shadow-sm flex items-center gap-2 md:gap-3">
+            <div className="p-1.5 md:p-2 bg-green-50 text-green-600 rounded-lg">
+                <DollarSign size={18} className="md:w-5 md:h-5" />
             </div>
             <div>
-                <p className="text-xs text-gray-500 font-medium">Today's Revenue</p>
-                <p className="text-lg font-bold text-gray-900">${totalRevenue.toLocaleString()}</p>
+                <p className="text-[10px] md:text-xs text-gray-500 font-medium">Today's Revenue</p>
+                <p className="text-base md:text-lg font-bold text-gray-900">${totalRevenue.toLocaleString()}</p>
             </div>
         </div>
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <div className="relative max-w-full md:max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
         <input
           type="text"
           placeholder="Search by Table or Order ID..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent shadow-sm"
+          className="w-full pl-9 md:pl-10 pr-4 py-2.5 md:py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent shadow-sm text-sm md:text-base"
         />
       </div>
 
       {/* Payable Orders Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
         {filteredOrders.length > 0 ? (
            filteredOrders.map(order => (
             <motion.div

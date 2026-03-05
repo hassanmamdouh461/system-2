@@ -29,12 +29,12 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-4 md:space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-0">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 md:gap-0">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm md:text-base text-gray-500">Welcome back, here's what's happening today.</p>
+          <h1 className="text-lg md:text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-xs md:text-base text-gray-500">Welcome back, here's what's happening today.</p>
         </div>
         <div className="text-left md:text-right">
           <p className="text-sm text-gray-500">Today's Date</p>
@@ -43,17 +43,17 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid - 2 cols on mobile, 4 on desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6">
         {stats.map((stat, index) => (
           <StatCard key={index} {...stat} />
         ))}
       </div>
 
       {/* Quick Actions Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-base md:text-lg font-bold text-gray-900 mb-4 md:mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-2 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-8">
+        <div className="lg:col-span-2 bg-white p-3 md:p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-sm md:text-lg font-bold text-gray-900 mb-3 md:mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-2 md:gap-4">
             {quickActions.map((action, index) => {
               const Icon = action.icon;
               return (
@@ -71,9 +71,9 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-base md:text-lg font-bold text-gray-900 mb-4 md:mb-6">Recent Activity</h2>
-          <div className="space-y-4">
+        <div className="bg-white p-3 md:p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-sm md:text-lg font-bold text-gray-900 mb-3 md:mb-6">Recent Activity</h2>
+          <div className="space-y-3 md:space-y-4">
             {recentActivity.map((activity, index) => {
               const Icon = activity.icon;
               return (

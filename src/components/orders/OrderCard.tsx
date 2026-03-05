@@ -62,7 +62,7 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
       whileTap={{ scale: 0.98 }}
       onClick={() => onClick(order)}
       className={clsx(
-        "mobile-touch-target cursor-pointer p-4 rounded-2xl transition-all relative overflow-hidden group",
+        "mobile-touch-target cursor-pointer p-3 md:p-4 rounded-xl md:rounded-2xl transition-all relative overflow-hidden group",
         selected 
           ? "bg-white shadow-xl shadow-caramel/20 border-2 border-caramel/30" 
           : "bg-white/90 backdrop-blur-sm shadow-md hover:shadow-xl border border-gray-200/50 hover:border-gray-300/50"
@@ -74,10 +74,10 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
       {/* Content */}
       <div className="relative z-10">
         {/* Header */}
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-lg text-gray-900">{order.tableId}</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">
+        <div className="flex justify-between items-start mb-2 md:mb-3">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <span className="font-bold text-base md:text-lg text-gray-900">{order.tableId}</span>
+            <span className="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">
               #{order.orderNumber}
             </span>
           </div>

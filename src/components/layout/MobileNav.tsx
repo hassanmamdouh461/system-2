@@ -15,10 +15,10 @@ export function MobileNav() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 pb-safe-bottom">
       {/* Subtle container */}
-      <div className="relative mx-2 mb-2 rounded-2xl overflow-hidden">
+      <div className="relative mx-0 mb-0 rounded-none overflow-hidden">
         {/* Main navigation with soft background */}
-        <div className="relative bg-white/95 backdrop-blur-xl border-t border-gray-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
-          <div className="flex items-center justify-around px-2 py-3">
+        <div className="relative bg-white/98 backdrop-blur-xl border-t border-gray-200 shadow-[0_-2px_12px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center justify-around px-1 py-2">
             {navItems.map((item) => (
               <NavLink
                 key={item.path}

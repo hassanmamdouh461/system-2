@@ -38,22 +38,22 @@ export default function Orders() {
   return (
     <div className="h-[calc(100vh-2rem)] flex flex-col">
       {/* Header */}
-      <div className="mb-4 md:mb-6">
-        <div className="flex justify-between items-start md:items-center mb-4 gap-3">
+      <div className="mb-3 md:mb-6">
+        <div className="flex justify-between items-start md:items-center mb-3 gap-2">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">Orders</h1>
-            <p className="text-sm md:text-base text-gray-500">Manage order flow and track status.</p>
+            <h1 className="text-lg md:text-2xl font-bold text-gray-900">Orders</h1>
+            <p className="text-xs md:text-base text-gray-500">Manage order flow and track status.</p>
           </div>
         </div>
         
         {/* Filters - Horizontal scroll on mobile */}
-        <div className="overflow-x-auto hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="overflow-x-auto hide-scrollbar -mx-3 px-3 md:mx-0 md:px-0">
           <div className="bg-white border border-gray-200 rounded-lg p-1 flex gap-1 min-w-max md:min-w-0">
             {(['All', 'New', 'Preparing', 'Ready', 'Completed'] as const).map(status => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                className={`mobile-touch-target px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`mobile-touch-target px-2.5 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${
                   filterStatus === status 
                     ? 'bg-gray-900 text-white shadow-sm' 
                     : 'text-gray-600 hover:bg-gray-50'
@@ -74,7 +74,7 @@ export default function Orders() {
       {/* Kanban Board - Desktop only | Mobile: Simple list */}
       {isMobile ? (
         /* Mobile: Simple List View */
-        <div className="flex-1 overflow-y-auto space-y-3 pb-4">
+        <div className="flex-1 overflow-y-auto space-y-2 pb-4">
           {filteredOrders.map(order => (
             <OrderCard 
               key={order.id} 

@@ -51,13 +51,13 @@ export default function Settings() {
   ];
 
   return (
-    <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-3 md:space-y-8 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-sm md:text-base text-gray-500">Manage your account and preferences.</p>
+        <h1 className="text-lg md:text-2xl font-bold text-gray-900">Settings</h1>
+        <p className="text-xs md:text-base text-gray-500">Manage your account and preferences.</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-3 md:space-y-6">
         {sections.map((section, idx) => (
           <motion.div 
             key={idx}

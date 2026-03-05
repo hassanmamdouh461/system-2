@@ -48,27 +48,27 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus }: MenuIte
       </div>
 
       {/* Text Content Below Image */}
-      <div className="p-4">
+      <div className="p-3 md:p-4">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <h3 className="font-bold text-gray-900 line-clamp-1">{item.name}</h3>
-            <span className="text-xs text-gray-500 font-medium px-2 py-0.5 bg-gray-100 rounded-full">
+            <h3 className="font-bold text-sm md:text-base text-gray-900 line-clamp-1">{item.name}</h3>
+            <span className="text-[10px] md:text-xs text-gray-500 font-medium px-1.5 md:px-2 py-0.5 bg-gray-100 rounded-full">
               {item.category}
             </span>
           </div>
-          <span className="font-bold text-lg text-mocha-700">${item.price.toFixed(2)}</span>
+          <span className="font-bold text-base md:text-lg text-mocha-700">${item.price.toFixed(2)}</span>
         </div>
-        <p className="text-gray-500 text-sm line-clamp-2 mb-4 h-10">{item.description}</p>
+        <p className="text-gray-500 text-xs md:text-sm line-clamp-2 mb-3 md:mb-4 min-h-[32px] md:h-10">{item.description}</p>
         
         <button
           onClick={() => onToggleStatus(item.id)}
-          className={`w-full py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+          className={`w-full py-2 rounded-lg text-xs md:text-sm font-medium flex items-center justify-center gap-1.5 md:gap-2 transition-colors ${
             item.available 
               ? 'bg-green-50 text-green-600 hover:bg-green-100' 
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          <Power size={16} />
+          <Power size={14} className="md:w-4 md:h-4" />
           {item.available ? 'Available' : 'Unavailable'}
         </button>
       </div>

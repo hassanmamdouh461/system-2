@@ -46,7 +46,7 @@ export function StatCard({ label, value, icon: Icon, trend, color }: StatCardPro
       whileTap={{ scale: 0.99 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/95 backdrop-blur-sm p-5 md:p-6 rounded-2xl shadow-sm hover:shadow-md border border-gray-200/50 relative overflow-hidden group transition-all mobile-touch-target"
+      className="bg-white/95 backdrop-blur-sm p-3 md:p-6 rounded-xl md:rounded-2xl shadow-sm hover:shadow-md border border-gray-200/50 relative overflow-hidden group transition-all mobile-touch-target"
     >
       {/* Soft gradient overlay on hover */}
       <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-300`} />

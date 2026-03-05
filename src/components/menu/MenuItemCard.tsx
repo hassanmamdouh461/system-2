@@ -19,23 +19,23 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus }: MenuIte
       exit={{ opacity: 0, scale: 0.9 }}
       className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group relative ${!item.available ? 'opacity-75 grayscale-[0.5]' : ''}`}
     >
-      {/* Image Container - fixed height on mobile, taller on desktop */}
-      <div className="relative overflow-hidden h-40 sm:h-44 lg:h-52">
-        <img 
-          src={item.image} 
-          alt={item.name} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      {/* Image Container - grows naturally with the image, no cropping */}
+      <div className="relative">
+        <img
+          src={item.image}
+          alt={item.name}
+          className="w-full h-auto object-contain block"
         />
 
         {/* Action buttons — always visible on mobile, hover only on desktop */}
         <div className="absolute top-2 right-2 flex gap-1.5 md:opacity-0 md:group-hover:opacity-100 md:transition-opacity">
-          <button 
-            onClick={(e) => { e.stopPropagation(); onEdit(item); }} 
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(item); }}
             className="p-2 bg-white/90 backdrop-blur rounded-full text-blue-600 hover:bg-blue-50 transition-colors shadow-sm"
           >
             <Edit size={14} />
           </button>
-          <button 
+          <button
             onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
             className="p-2 bg-white/90 backdrop-blur rounded-full text-red-600 hover:bg-red-50 transition-colors shadow-sm"
           >

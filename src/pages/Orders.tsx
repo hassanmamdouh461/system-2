@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { Order, OrderStatus } from '../types/order';
 import { OrderCard } from '../components/orders/OrderCard';
 import { OrderDetails } from '../components/orders/OrderDetails';
-import { Filter } from 'lucide-react';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useOrders } from '../hooks/useOrders';
-import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 export default function Orders() {
   // Use Appwrite for real-time data persistence
@@ -51,24 +49,24 @@ export default function Orders() {
     : orders.filter(o => o.status === filterStatus);
 
   return (
-    <div className="h-[calc(100vh-2rem)] flex flex-col">
+    <div className="flex flex-col" style={{ height: 'calc(100dvh - 4rem)' }}>
       {/* Header */}
-      <div className="mb-3 md:mb-6">
-        <div className="flex justify-between items-start md:items-center mb-3 gap-2">
+      <div className="mb-2 md:mb-4 shrink-0">
+        <div className="flex justify-between items-center mb-2">
           <div>
             <h1 className="text-lg md:text-2xl font-bold text-gray-900">Orders</h1>
-            <p className="text-xs md:text-base text-gray-500">Manage order flow and track status.</p>
+            <p className="text-xs md:text-sm text-gray-500">Manage order flow and track status.</p>
           </div>
         </div>
         
-        {/* Filters - Horizontal scroll on mobile */}
+        {/* Filters */}
         <div className="overflow-x-auto hide-scrollbar -mx-3 px-3 md:mx-0 md:px-0">
           <div className="bg-white border border-gray-200 rounded-lg p-1 flex gap-1 min-w-max md:min-w-0">
             {(['All', 'New', 'Preparing', 'Ready', 'Completed'] as const).map(status => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                className={`mobile-touch-target px-2.5 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                   filterStatus === status 
                     ? 'bg-gray-900 text-white shadow-sm' 
                     : 'text-gray-600 hover:bg-gray-50'
@@ -76,7 +74,7 @@ export default function Orders() {
               >
                 {status}
                 {status !== 'All' && (
-                  <span className="ml-1.5 text-xs opacity-75">
+                  <span className="ml-1 text-xs opacity-70">
                     ({orders.filter(o => o.status === status).length})
                   </span>
                 )}
@@ -86,40 +84,37 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Kanban Board - Desktop only | Mobile: Simple list */}
+      {/* Kanban Board - Desktop | Mobile: Simple list */}
       {isMobile ? (
-        /* Mobile: Simple List View */
-        <div className="flex-1 overflow-y-auto space-y-2 pb-4">
-          {filteredOrders.map(order => (
-            <OrderCard 
-              key={order.id} 
-              order={order} 
-              onClick={setSelectedOrder}
-            />
-          ))}
-          {filteredOrders.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              <p>No orders found</p>
+        /* Mobile: Full-width list, padded for bottom nav */
+        <div className="flex-1 overflow-y-auto space-y-2 pb-24">
+          {filteredOrders.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <p className="text-sm">No orders found</p>
             </div>
+          ) : (
+            filteredOrders.map(order => (
+              <OrderCard 
+                key={order.id} 
+                order={order} 
+                onClick={setSelectedOrder}
+              />
+            ))
           )}
         </div>
       ) : (
         /* Desktop: Kanban View */
         <div className="flex-1 overflow-x-auto pb-4">
-          <div className="flex gap-6 min-w-[1000px] h-full">
+          <div className="flex gap-4 min-w-[900px] h-full">
             {columns.map(col => (
-              <div key={col.status} className="flex-1 flex flex-col bg-gray-100/50 rounded-2xl p-4 border border-gray-200/50">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${col.color.replace('bg-', 'bg-').split(' ')[0].replace('50', '500')}`} />
-                    {col.title}
-                  </h3>
+              <div key={col.status} className="flex-1 flex flex-col bg-gray-100/50 rounded-2xl p-3 border border-gray-200/50">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-bold text-gray-700 text-sm">{col.title}</h3>
                   <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-xs font-bold">
                     {orders.filter(o => o.status === col.status).length}
                   </span>
                 </div>
-                
-                <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-2">
+                <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
                   {orders
                     .filter(o => o.status === col.status)
                     .map(order => (
@@ -134,14 +129,14 @@ export default function Orders() {
             ))}
 
             {/* Completed Column */}
-            <div className="flex-1 flex flex-col bg-gray-100/50 rounded-2xl p-4 border border-gray-200/50 opacity-75">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-gray-500">Completed</h3>
+            <div className="flex-1 flex flex-col bg-gray-100/50 rounded-2xl p-3 border border-gray-200/50 opacity-75">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-bold text-gray-500 text-sm">Completed</h3>
                 <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-xs font-bold">
                   {orders.filter(o => o.status === 'Completed').length}
                 </span>
               </div>
-              <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-2">
+              <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
                 {orders
                   .filter(o => o.status === 'Completed')
                   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())

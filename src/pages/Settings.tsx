@@ -1,29 +1,67 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User, Store, Bell, Lock, HelpCircle, LogOut, Database, RotateCcw, Coffee } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DatabaseStatus } from '../components/ui/DatabaseStatus';
 import { MOCK_ORDERS } from '../types/order';
 import { INITIAL_MENU_ITEMS } from '../types/menu';
+import { menuService } from '../services/menuService';
+import { ordersService } from '../services/ordersService';
 
 export default function Settings() {
-  const handleResetOrders = () => {
-    if (window.confirm('⚠️ This will reset all orders to default. Continue?')) {
-      window.localStorage.setItem('brewmaster_orders', JSON.stringify(MOCK_ORDERS));
-      window.location.reload();
+  const [resetting, setResetting] = useState(false);
+
+  const handleResetOrders = async () => {
+    if (window.confirm('⚠️ This will reset all orders in Appwrite to default. Continue?')) {
+      try {
+        setResetting(true);
+        await ordersService.resetToDefaults(MOCK_ORDERS);
+        alert('✅ Orders reset successfully!');
+        window.location.reload();
+      } catch (error) {
+        console.error('Failed to reset orders:', error);
+        alert('❌ Failed to reset orders');
+      } finally {
+        setResetting(false);
+      }
     }
   };
 
-  const handleResetMenu = () => {
-    if (window.confirm('⚠️ This will reset menu to default 8 items. Continue?')) {
-      window.localStorage.setItem('brewmaster_menu', JSON.stringify(INITIAL_MENU_ITEMS));
-      window.location.reload();
+  const handleResetMenu = async () => {
+    if (window.confirm('⚠️ This will reset menu in Appwrite to default 8 items. Continue?')) {
+      try {
+        setResetting(true);
+        await menuService.resetToDefaults(INITIAL_MENU_ITEMS);
+        alert('✅ Menu reset successfully!');
+        window.location.reload();
+      } catch (error) {
+        console.error('Failed to reset menu:', error);
+        alert('❌ Failed to reset menu');
+      } finally {
+        setResetting(false);
+      }
     }
   };
 
-  const handleClearLocalStorage = () => {
-    if (window.confirm('⚠️ This will clear ALL local data. Continue?')) {
-      window.localStorage.clear();
-      window.location.reload();
+  const handleClearAllData = async () => {
+    if (window.confirm('⚠️ This will delete ALL data from Appwrite (Menu + Orders). Continue?')) {
+      try {
+        setResetting(true);
+        // Delete all menu items
+        const menuItems = await menuService.getAll();
+        await Promise.all(menuItems.map(item => menuService.delete(item.id)));
+        
+        // Delete all orders
+        const orders = await ordersService.getAll();
+        await Promise.all(orders.map(order => ordersService.delete(order.id)));
+        
+        alert('✅ All data cleared successfully!');
+        window.location.reload();
+      } catch (error) {
+        console.error('Failed to clear data:', error);
+        alert('❌ Failed to clear data');
+      } finally {
+        setResetting(false);
+      }
     }
   };
 
@@ -107,40 +145,43 @@ export default function Settings() {
           <div className="p-2 space-y-2">
             <button 
               onClick={handleResetOrders}
-              className="mobile-touch-target w-full flex items-center gap-4 p-4 hover:bg-amber-50 rounded-xl transition-colors text-left group tap-highlight-none"
+              disabled={resetting}
+              className="mobile-touch-target w-full flex items-center gap-4 p-4 hover:bg-amber-50 rounded-xl transition-colors text-left group tap-highlight-none disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 group-hover:bg-amber-200 transition-colors">
-                <RotateCcw size={20} />
+                <RotateCcw size={20} className={resetting ? 'animate-spin' : ''} />
               </div>
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900 text-sm md:text-base">Reset Orders</h3>
-                <p className="text-xs md:text-sm text-gray-500">Restore default mock orders</p>
+                <p className="text-xs md:text-sm text-gray-500">Reset Appwrite orders to defaults</p>
               </div>
             </button>
 
             <button 
               onClick={handleResetMenu}
-              className="mobile-touch-target w-full flex items-center gap-4 p-4 hover:bg-blue-50 rounded-xl transition-colors text-left group tap-highlight-none"
+              disabled={resetting}
+              className="mobile-touch-target w-full flex items-center gap-4 p-4 hover:bg-blue-50 rounded-xl transition-colors text-left group tap-highlight-none disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-200 transition-colors">
                 <Coffee size={20} />
               </div>
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900 text-sm md:text-base">Reset Menu</h3>
-                <p className="text-xs md:text-sm text-gray-500">Restore 8 default menu items</p>
+                <p className="text-xs md:text-sm text-gray-500">Reset Appwrite menu to 8 items</p>
               </div>
             </button>
 
             <button 
-              onClick={handleClearLocalStorage}
-              className="mobile-touch-target w-full flex items-center gap-4 p-4 hover:bg-red-50 rounded-xl transition-colors text-left group tap-highlight-none"
+              onClick={handleClearAllData}
+              disabled={resetting}
+              className="mobile-touch-target w-full flex items-center gap-4 p-4 hover:bg-red-50 rounded-xl transition-colors text-left group tap-highlight-none disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 group-hover:bg-red-200 transition-colors">
                 <Database size={20} />
               </div>
               <div className="flex-1">
-                <h3 className="font-medium text-gray-900 text-sm md:text-base">Clear All Local Data</h3>
-                <p className="text-xs md:text-sm text-gray-500">Remove all localStorage data</p>
+                <h3 className="font-medium text-gray-900 text-sm md:text-base">Clear All Data</h3>
+                <p className="text-xs md:text-sm text-gray-500">Delete everything from Appwrite</p>
               </div>
             </button>
           </div>

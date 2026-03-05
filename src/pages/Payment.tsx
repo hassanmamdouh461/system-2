@@ -1,37 +1,59 @@
-import React, { useState } from 'react';
-import { MOCK_ORDERS, Order, OrderStatus } from '../types/order';
+import React, { useState, useMemo } from 'react';
+import { Order, OrderStatus } from '../types/order';
 import { PaymentModal } from '../components/payment/PaymentModal';
 import { CreditCard, DollarSign, Search, Calculator } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useOrders } from '../hooks/useOrders';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 export default function Payment() {
-  // Use localStorage to sync with Orders page
-  const [allOrders, setAllOrders] = useLocalStorage<Order[]>('brewmaster_orders', MOCK_ORDERS);
+  // Use Appwrite - sync with Orders page
+  const { orders: allOrders, loading, error, updateOrderStatus } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filter only active orders that are not settled (Completed/Cancelled)
-  const orders = allOrders.filter(o => ['New', 'Preparing', 'Ready'].includes(o.status));
+  const orders = useMemo(() => 
+    allOrders.filter(o => ['New', 'Preparing', 'Ready'].includes(o.status)
+  ), [allOrders]);
 
   const handleOpenPayment = (order: Order) => {
     setSelectedOrder(order);
     setIsPaymentModalOpen(true);
   };
 
-  const handlePaymentComplete = (orderId: string, method: 'Cash' | 'Card') => {
+  const handlePaymentComplete = async (orderId: string, method: 'Cash' | 'Card') => {
     console.log(`Payment completed for ${orderId} via ${method}`);
-    // Use functional update to avoid stale closures
-    setAllOrders(prevOrders => prevOrders.map(o => 
-      o.id === orderId ? { ...o, status: 'Completed' as OrderStatus } : o
-    ));
+    try {
+      await updateOrderStatus(orderId, 'Completed');
+    } catch (error) {
+      console.error('Failed to complete payment:', error);
+      alert('Failed to complete payment');
+    }
   };
 
   const filteredOrders = orders.filter(o => 
     o.tableId.toLowerCase().includes(searchTerm.toLowerCase()) || 
     o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Show loading state
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <p className="text-red-600 font-semibold mb-2">Failed to load orders</p>
+          <p className="text-gray-500 text-sm">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   const totalRevenue = 4289.00; // Mock revenue
 

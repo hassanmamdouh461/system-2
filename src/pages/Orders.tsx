@@ -1,29 +1,49 @@
 import React, { useState } from 'react';
-import { Order, MOCK_ORDERS, OrderStatus } from '../types/order';
+import { Order, OrderStatus } from '../types/order';
 import { OrderCard } from '../components/orders/OrderCard';
 import { OrderDetails } from '../components/orders/OrderDetails';
 import { Filter } from 'lucide-react';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useOrders } from '../hooks/useOrders';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 export default function Orders() {
-  // Use localStorage to persist orders - fallback to MOCK_ORDERS on first load
-  const [orders, setOrders] = useLocalStorage<Order[]>('brewmaster_orders', MOCK_ORDERS);
+  // Use Appwrite for real-time data persistence
+  const { orders, loading, error, updateOrderStatus } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'All'>('All');
   const isMobile = useIsMobile();
 
-  const handleUpdateStatus = (orderId: string, newStatus: OrderStatus) => {
-    // Use functional update to avoid stale closures
-    setOrders(prevOrders => prevOrders.map(o => 
-      o.id === orderId ? { ...o, status: newStatus } : o
-    ));
-    
-    // Update selected order if it's the one being changed
-    if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder({ ...selectedOrder, status: newStatus });
+  const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      
+      // Update selected order if it's the one being changed
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      alert('Failed to update order status');
     }
   };
+
+  // Show loading state
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <p className="text-red-600 font-semibold mb-2">Failed to load orders</p>
+          <p className="text-gray-500 text-sm">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   const columns: { title: string; status: OrderStatus; color: string }[] = [
     { title: 'New Orders', status: 'New', color: 'bg-mocha-100 text-mocha-800' },

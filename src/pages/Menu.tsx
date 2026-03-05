@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Plus, Search, Filter, Coffee, Snowflake, Wine, IceCream } from 'lucide-react';
-import { MenuItem, CATEGORIES, INITIAL_MENU_ITEMS } from '../types/menu';
+import { MenuItem, CATEGORIES } from '../types/menu';
 import { MenuItemCard } from '../components/menu/MenuItemCard';
 import { MenuModal } from '../components/menu/MenuModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useMenu } from '../hooks/useMenu';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 export default function Menu() {
-  // Use localStorage to persist menu items - fallback to INITIAL_MENU_ITEMS on first load
-  const [items, setItems] = useLocalStorage<MenuItem[]>('brewmaster_menu', INITIAL_MENU_ITEMS);
+  // Use Appwrite for real-time data persistence
+  const { items, loading, error, addItem, updateItem, deleteItem, toggleAvailability } = useMenu();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -22,16 +23,23 @@ export default function Menu() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleToggleStatus = (id: string) => {
-    // Use functional update to avoid stale closures
-    setItems(prevItems => prevItems.map(item => 
-      item.id === id ? { ...item, available: !item.available } : item
-    ));
+  const handleToggleStatus = async (id: string) => {
+    try {
+      await toggleAvailability(id);
+    } catch (error) {
+      console.error('Failed to toggle status:', error);
+      alert('Failed to update item availability');
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this item?')) {
-      setItems(prevItems => prevItems.filter(item => item.id !== id));
+      try {
+        await deleteItem(id);
+      } catch (error) {
+        console.error('Failed to delete item:', error);
+        alert('Failed to delete item');
+      }
     }
   };
 
@@ -45,22 +53,39 @@ export default function Menu() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (itemData: MenuItem | Omit<MenuItem, 'id'>) => {
-    if ('id' in itemData) {
-      // Edit existing
-      setItems(prevItems => prevItems.map(item => 
-        item.id === itemData.id ? itemData as MenuItem : item
-      ));
-    } else {
-      // Add new
-      const newItem = {
-        ...itemData,
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      } as MenuItem;
-      setItems(prevItems => [newItem, ...prevItems]);
+  const handleSave = async (itemData: MenuItem | Omit<MenuItem, 'id'>) => {
+    try {
+      if ('id' in itemData) {
+        // Edit existing
+        const { id, ...data } = itemData;
+        await updateItem(id, data);
+      } else {
+        // Add new
+        await addItem(itemData);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Failed to save item:', error);
+      alert('Failed to save item');
     }
-    setIsModalOpen(false);
   };
+
+  // Show loading state
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <p className="text-red-600 font-semibold mb-2">Failed to load menu</p>
+          <p className="text-gray-500 text-sm">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 md:space-y-8">

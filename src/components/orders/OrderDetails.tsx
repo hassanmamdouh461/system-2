@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Order, OrderStatus } from '../../types/order';
-import { X, Clock, Printer, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
+import { X, Clock, Printer, CheckCircle2, XCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useSwipe } from '../../hooks/useSwipe';
 import { useIsMobile } from '../../hooks/useIsMobile';
 
@@ -199,6 +199,15 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
               </div>
             )}
+
+            {/* Mobile Back Button */}
+            <button
+              onClick={onClose}
+              className="md:hidden flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 tap-highlight-none active:bg-gray-100 transition-colors"
+            >
+              <ArrowLeft size={16} />
+              Back to Orders
+            </button>
 
             {/* Header */}
             <div className="p-4 md:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">

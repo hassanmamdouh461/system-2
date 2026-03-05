@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
+import { LoadingScreen } from './components/ui/LoadingScreen';
 
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import Dashboard from './pages/Dashboard';
@@ -29,6 +30,17 @@ function AppRoutes() {
 }
 
 function App() {
+  const [showIntro, setShowIntro] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowIntro(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showIntro) {
+    return <LoadingScreen />;
+  }
+
   return (
     <AuthProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

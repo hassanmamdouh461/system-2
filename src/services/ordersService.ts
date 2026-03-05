@@ -1,4 +1,4 @@
-import { databases, directUpdate, APPWRITE_CONFIG } from '../lib/appwrite';
+import { databases, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
 import { Order, OrderStatus } from '../types/order';
 import { ID } from 'appwrite';
 
@@ -159,11 +159,7 @@ export const ordersService = {
    */
   async delete(id: string): Promise<void> {
     try {
-      await databases.deleteDocument(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.ORDERS,
-        id
-      );
+      await directDelete(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id);
     } catch (error) {
       console.error('[ordersService] Error deleting order:', error);
       throw new Error('Failed to delete order');

@@ -1,4 +1,4 @@
-import { databases, directUpdate, APPWRITE_CONFIG } from '../lib/appwrite';
+import { databases, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
 import { MenuItem } from '../types/menu';
 import { ID, Query } from 'appwrite';
 
@@ -100,11 +100,7 @@ export const menuService = {
    */
   async delete(id: string): Promise<void> {
     try {
-      await databases.deleteDocument(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.MENU,
-        id
-      );
+      await directDelete(APPWRITE_CONFIG.COLLECTIONS.MENU, id);
     } catch (error) {
       console.error('[menuService] Error deleting menu item:', error);
       throw new Error('Failed to delete menu item');

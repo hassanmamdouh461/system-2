@@ -41,3 +41,23 @@ export async function directUpdate(
     }
     return res.json();
 }
+
+/**
+ * Direct REST API DELETE call - bypasses the SDK serializer bug in v22.
+ */
+export async function directDelete(
+    collectionId: string,
+    docId: string
+): Promise<void> {
+    const url = `${APPWRITE_CONFIG.ENDPOINT}/databases/${APPWRITE_CONFIG.DB_ID}/collections/${collectionId}/documents/${encodeURIComponent(docId)}`;
+    const res = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'X-Appwrite-Project': APPWRITE_CONFIG.PROJECT_ID,
+        },
+    });
+    if (!res.ok && res.status !== 204) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as any).message || `HTTP ${res.status}`);
+    }
+}

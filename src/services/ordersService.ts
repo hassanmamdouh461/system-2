@@ -1,4 +1,4 @@
-import { databases, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
+import { databases, directCreate, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
 import { Order, OrderStatus } from '../types/order';
 import { ID } from 'appwrite';
 
@@ -53,25 +53,28 @@ export const ordersService = {
    */
   async create(order: Omit<Order, 'id'>): Promise<Order> {
     try {
-      const response: any = await databases.createDocument(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.ORDERS,
-        ID.unique(),
-        {
-          orderNumber: order.orderNumber,
-          tableId: order.tableId,
-          items: JSON.stringify(order.items), // Store as JSON string
-          status: order.status,
-          totalAmount: Number(order.totalAmount),
-          createdAt: order.createdAt,
-        }
-      );
+      const response = await directCreate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, ID.unique(), {
+        orderNumber: String(order.orderNumber),
+        tableId: String(order.tableId),
+        items: JSON.stringify(order.items),
+        status: String(order.status),
+        totalAmount: Number(order.totalAmount),
+        createdAt: order.createdAt
+          ? new Date(order.createdAt).toISOString()
+          : new Date().toISOString(),
+      });
+
+      let items = response.items;
+      if (typeof items === 'string') {
+        try { items = JSON.parse(items); } catch { items = []; }
+      }
+      if (!Array.isArray(items)) items = [];
 
       return {
         id: response.$id,
         orderNumber: response.orderNumber,
         tableId: response.tableId,
-        items: response.items,
+        items,
         status: response.status,
         totalAmount: response.totalAmount,
         createdAt: response.createdAt,

@@ -1,4 +1,4 @@
-import { databases, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
+import { databases, directCreate, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
 import { MenuItem } from '../types/menu';
 import { ID, Query } from 'appwrite';
 
@@ -36,19 +36,14 @@ export const menuService = {
    */
   async create(item: Omit<MenuItem, 'id'>): Promise<MenuItem> {
     try {
-      const response: any = await databases.createDocument(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.MENU,
-        ID.unique(),
-        {
-          name: item.name,
-          description: item.description,
-          price: item.price,
-          category: item.category,
-          image: item.image,
-          available: item.available,
-        }
-      );
+      const response = await directCreate(APPWRITE_CONFIG.COLLECTIONS.MENU, ID.unique(), {
+        name: String(item.name),
+        description: String(item.description ?? ''),
+        price: Number(item.price),
+        category: String(item.category),
+        image: String(item.image ?? ''),
+        available: Boolean(item.available),
+      });
 
       return {
         id: response.$id,

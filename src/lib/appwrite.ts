@@ -43,6 +43,31 @@ export async function directUpdate(
 }
 
 /**
+ * Direct REST API POST call - bypasses the SDK serializer bug in v22
+ * that causes "t.isBigNumber is not a function" errors on createDocument.
+ */
+export async function directCreate(
+    collectionId: string,
+    docId: string,
+    data: Record<string, unknown>
+): Promise<any> {
+    const url = `${APPWRITE_CONFIG.ENDPOINT}/databases/${APPWRITE_CONFIG.DB_ID}/collections/${collectionId}/documents`;
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Appwrite-Project': APPWRITE_CONFIG.PROJECT_ID,
+        },
+        body: JSON.stringify({ documentId: docId, data }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as any).message || `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+/**
  * Direct REST API DELETE call - bypasses the SDK serializer bug in v22.
  */
 export async function directDelete(

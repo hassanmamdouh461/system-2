@@ -16,3 +16,28 @@ const client = new Client()
 
 export const databases = new Databases(client);
 export { client };
+
+/**
+ * Direct REST API call to Appwrite - bypasses the SDK serializer bug in v22
+ * that causes "t.isBigNumber is not a function" errors on PATCH requests.
+ */
+export async function directUpdate(
+    collectionId: string,
+    docId: string,
+    data: Record<string, unknown>
+): Promise<any> {
+    const url = `${APPWRITE_CONFIG.ENDPOINT}/databases/${APPWRITE_CONFIG.DB_ID}/collections/${collectionId}/documents/${encodeURIComponent(docId)}`;
+    const res = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Appwrite-Project': APPWRITE_CONFIG.PROJECT_ID,
+        },
+        body: JSON.stringify({ data }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as any).message || `HTTP ${res.status}`);
+    }
+    return res.json();
+}

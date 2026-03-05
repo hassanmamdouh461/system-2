@@ -1,4 +1,4 @@
-import { databases, APPWRITE_CONFIG } from '../lib/appwrite';
+import { databases, directUpdate, APPWRITE_CONFIG } from '../lib/appwrite';
 import { MenuItem } from '../types/menu';
 import { ID, Query } from 'appwrite';
 
@@ -70,8 +70,7 @@ export const menuService = {
    */
   async update(id: string, data: Partial<Omit<MenuItem, 'id'>>): Promise<MenuItem> {
     try {
-      // Only send the fields that are allowed in the schema
-      const cleanData: any = {};
+      const cleanData: Record<string, unknown> = {};
       if (data.name !== undefined) cleanData.name = data.name;
       if (data.description !== undefined) cleanData.description = data.description;
       if (data.price !== undefined) cleanData.price = Number(data.price);
@@ -79,12 +78,7 @@ export const menuService = {
       if (data.image !== undefined) cleanData.image = data.image;
       if (data.available !== undefined) cleanData.available = Boolean(data.available);
 
-      const response: any = await databases.updateDocument(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.MENU,
-        id,
-        cleanData
-      );
+      const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.MENU, id, cleanData);
 
       return {
         id: response.$id,

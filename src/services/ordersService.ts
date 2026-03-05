@@ -1,4 +1,4 @@
-import { databases, APPWRITE_CONFIG } from '../lib/appwrite';
+import { databases, directUpdate, APPWRITE_CONFIG } from '../lib/appwrite';
 import { Order, OrderStatus } from '../types/order';
 import { ID } from 'appwrite';
 
@@ -87,12 +87,7 @@ export const ordersService = {
    */
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     try {
-      const response: any = await databases.updateDocument(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.ORDERS,
-        id,
-        { status }
-      );
+      const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id, { status: String(status) });
 
       // Parse items from JSON string
       let items = response.items;
@@ -124,21 +119,15 @@ export const ordersService = {
    */
   async update(id: string, data: Partial<Omit<Order, 'id'>>): Promise<Order> {
     try {
-      // Clean and prepare data for Appwrite
-      const cleanData: any = {};
+      const cleanData: Record<string, unknown> = {};
       if (data.orderNumber !== undefined) cleanData.orderNumber = data.orderNumber;
       if (data.tableId !== undefined) cleanData.tableId = data.tableId;
       if (data.items !== undefined) cleanData.items = JSON.stringify(data.items);
-      if (data.status !== undefined) cleanData.status = data.status;
+      if (data.status !== undefined) cleanData.status = String(data.status);
       if (data.totalAmount !== undefined) cleanData.totalAmount = Number(data.totalAmount);
       if (data.createdAt !== undefined) cleanData.createdAt = data.createdAt;
 
-      const response: any = await databases.updateDocument(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.ORDERS,
-        id,
-        cleanData
-      );
+      const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id, cleanData);
 
       // Parse items from JSON string
       let items = response.items;

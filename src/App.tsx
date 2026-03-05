@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { LoadingScreen } from './components/ui/LoadingScreen';
 import { AuthProvider } from './context/AuthContext';
+import { DataProvider } from './context/DataContext';
 
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import Dashboard from './pages/Dashboard';
@@ -21,7 +21,6 @@ function AppRoutes() {
         <Route path="/payment" element={<Payment />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
-        {/* Add future routes here */}
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -30,25 +29,13 @@ function AppRoutes() {
 }
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate initial loading (e.g., waiting for assets/auth)
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500); // Reduced from 2500ms to 1500ms for faster startup
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <AuthProvider>
-      {isLoading ? (
-        <LoadingScreen />
-      ) : (
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <DataProvider>
           <AppRoutes />
-        </Router>
-      )}
+        </DataProvider>
+      </Router>
     </AuthProvider>
   );
 }

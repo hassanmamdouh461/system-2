@@ -9,7 +9,8 @@ export interface OrderItem {
 }
 
 export interface Order {
-  id: string;
+  id: string; // Database ID (for API calls)
+  orderNumber: string; // Display ID (e.g., ORD-1025)
   tableId: string;
   status: OrderStatus;
   items: OrderItem[];
@@ -18,46 +19,108 @@ export interface Order {
 }
 
 export const MOCK_ORDERS: Order[] = [
+  // ═══════════════ 2 NEW ORDERS ═══════════════
   {
-    id: 'ORD-1025',
-    tableId: 'T-4',
+    id: 'mock-id-1008',
+    orderNumber: 'ORD-1008',
+    tableId: 'T-3',
     status: 'New',
     items: [
-      { id: '1', name: 'Classic Cheeseburger', quantity: 2, price: 12.99 },
-      { id: '5', name: 'Strawberry Milkshake', quantity: 1, price: 6.50 },
+      { id: '1', name: 'Espresso', quantity: 2, price: 3.50 },
+      { id: '3', name: 'Cappuccino', quantity: 1, price: 5.00 },
     ],
-    totalAmount: 32.48,
+    totalAmount: 12.00,
     createdAt: new Date().toISOString(),
   },
   {
-    id: 'ORD-1024',
-    tableId: 'T-8',
+    id: 'mock-id-1007',
+    orderNumber: 'ORD-1007',
+    tableId: 'T-5',
+    status: 'New',
+    items: [
+      { id: '2', name: 'Spanish Latte', quantity: 1, price: 6.00 },
+      { id: '6', name: 'Mocha Frappe', quantity: 1, price: 7.00 },
+    ],
+    totalAmount: 13.00,
+    createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
+  },
+
+  // ═══════════════ 2 BREWING (Preparing) ═══════════════
+  {
+    id: 'mock-id-1006',
+    orderNumber: 'ORD-1006',
+    tableId: 'T-7',
     status: 'Preparing',
     items: [
-      { id: '3', name: 'Margherita Pizza', quantity: 1, price: 14.00 },
-      { id: '53', name: 'Coke', quantity: 2, price: 2.50 },
+      { id: '6', name: 'Mocha Frappe', quantity: 2, price: 7.00 },
+      { id: '4', name: 'Iced Latte', quantity: 1, price: 5.50 },
     ],
-    totalAmount: 19.00,
-    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 mins ago
+    totalAmount: 19.50,
+    createdAt: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
   },
   {
-    id: 'ORD-1023',
+    id: 'mock-id-1005',
+    orderNumber: 'ORD-1005',
     tableId: 'T-2',
-    status: 'Ready',
+    status: 'Preparing',
     items: [
-      { id: '4', name: 'Pepperoni Feast', quantity: 1, price: 16.00 },
+      { id: '3', name: 'Cappuccino', quantity: 2, price: 5.00 },
+      { id: '8', name: 'Strawberry Milkshake', quantity: 1, price: 6.00 },
     ],
     totalAmount: 16.00,
-    createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(), // 25 mins ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
+  },
+
+  // ═══════════════ 2 READY FOR PICKUP ═══════════════
+  {
+    id: 'mock-id-1004',
+    orderNumber: 'ORD-1004',
+    tableId: 'T-1',
+    status: 'Ready',
+    items: [
+      { id: '1', name: 'Espresso', quantity: 3, price: 3.50 },
+      { id: '7', name: 'Oreo Milkshake', quantity: 2, price: 6.50 },
+    ],
+    totalAmount: 23.50,
+    createdAt: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
   },
   {
-    id: 'ORD-1022',
-    tableId: 'Takeout',
+    id: 'mock-id-1003',
+    orderNumber: 'ORD-1003',
+    tableId: 'T-4',
+    status: 'Ready',
+    items: [
+      { id: '5', name: 'Iced Caramel Macchiato', quantity: 2, price: 6.50 },
+      { id: '7', name: 'Oreo Milkshake', quantity: 1, price: 6.50 },
+    ],
+    totalAmount: 19.50,
+    createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
+  },
+
+  // ═══════════════ 2 COMPLETED ═══════════════
+  {
+    id: 'mock-id-1002',
+    orderNumber: 'ORD-1002',
+    tableId: 'T-6',
     status: 'Completed',
     items: [
-      { id: '2', name: 'Double Bacon Blast', quantity: 1, price: 16.50 },
+      { id: '2', name: 'Spanish Latte', quantity: 1, price: 6.00 },
+      { id: '3', name: 'Cappuccino', quantity: 1, price: 5.00 },
+      { id: '8', name: 'Strawberry Milkshake', quantity: 1, price: 6.00 },
     ],
-    totalAmount: 16.50,
+    totalAmount: 17.00,
     createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+  },
+  {
+    id: 'mock-id-1001',
+    orderNumber: 'ORD-1001',
+    tableId: 'T-8',
+    status: 'Completed',
+    items: [
+      { id: '4', name: 'Iced Latte', quantity: 2, price: 5.50 },
+      { id: '6', name: 'Mocha Frappe', quantity: 1, price: 7.00 },
+    ],
+    totalAmount: 18.00,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
   },
 ];

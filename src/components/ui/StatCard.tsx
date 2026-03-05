@@ -12,10 +12,10 @@ interface StatCardProps {
 
 const colorConfig: Record<string, { gradient: string; iconBg: string; iconText: string; glow: string }> = {
   orange: { 
-    gradient: 'from-orange-200 to-pink-200', 
-    iconBg: 'bg-gradient-to-br from-orange-50 to-pink-50', 
-    iconText: 'text-orange-500',
-    glow: 'shadow-orange-200/10'
+    gradient: 'from-amber-200 to-orange-200', 
+    iconBg: 'bg-gradient-to-br from-amber-50 to-orange-50', 
+    iconText: 'text-amber-600',
+    glow: 'shadow-amber-200/10'
   },
   blue: { 
     gradient: 'from-blue-200 to-cyan-200', 

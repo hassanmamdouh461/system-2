@@ -6,7 +6,7 @@ import {
   CreditCard, 
   BarChart3, 
   Settings, 
-  ChefHat,
+  Coffee,
   ChevronLeft,
   ChevronRight,
   X
@@ -43,7 +43,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
       {!isMobile && (
         <button 
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-8 bg-orange-500 text-white p-1 rounded-full shadow-lg hover:bg-orange-600 transition-colors z-50"
+          className="absolute -right-3 top-8 bg-mocha-600 text-white p-1 rounded-full shadow-lg hover:bg-mocha-700 transition-colors z-50"
         >
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -61,13 +61,13 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
 
       {/* Brand */}
       <div className="p-6 flex items-center gap-3 border-b border-gray-800">
-        <div className="bg-gradient-to-br from-orange-400 to-red-500 p-2 rounded-lg shadow-lg shadow-orange-500/20">
-          <ChefHat className="w-6 h-6 text-white" />
+        <div className="bg-gradient-to-br from-mocha-600 to-coffee-dark p-2 rounded-lg shadow-lg shadow-mocha-500/20">
+          <Coffee className="w-6 h-6 text-white" />
         </div>
         {(!collapsed || isMobile) && (
           <div>
-            <h1 className="text-white font-bold text-lg leading-none">Resto<span className="text-orange-500">Pro</span></h1>
-            <p className="text-gray-500 text-xs">Manager</p>
+            <h1 className="text-white font-bold text-lg leading-none">Brew<span className="text-caramel">Master</span></h1>
+            <p className="text-gray-500 text-xs">Coffee POS</p>
           </div>
         )}
       </div>

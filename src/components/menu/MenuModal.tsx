@@ -91,8 +91,8 @@ export function MenuModal({ isOpen, onClose, onSave, initialData }: MenuModalPro
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                placeholder="e.g. Classic Burger"
+                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent transition-all"
+                placeholder="e.g. Spanish Latte"
               />
             </div>
 
@@ -103,7 +103,7 @@ export function MenuModal({ isOpen, onClose, onSave, initialData }: MenuModalPro
                 rows={3}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent transition-all resize-none"
                 placeholder="Brief description of the item..."
               />
             </div>
@@ -117,7 +117,7 @@ export function MenuModal({ isOpen, onClose, onSave, initialData }: MenuModalPro
                   required
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent transition-all"
                   placeholder="0.00"
                 />
               </div>
@@ -127,7 +127,7 @@ export function MenuModal({ isOpen, onClose, onSave, initialData }: MenuModalPro
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all bg-white"
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent transition-all bg-white"
                 >
                   {CATEGORIES.filter(c => c !== 'All').map(category => (
                     <option key={category} value={category}>{category}</option>
@@ -144,7 +144,7 @@ export function MenuModal({ isOpen, onClose, onSave, initialData }: MenuModalPro
                   required
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent transition-all"
                   placeholder="https://images.unsplash.com/..."
                 />
               </div>
@@ -161,7 +161,7 @@ export function MenuModal({ isOpen, onClose, onSave, initialData }: MenuModalPro
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 rounded-xl bg-orange-500 text-white font-medium hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-colors"
+                className="flex-1 px-4 py-2 rounded-xl bg-mocha-700 text-white font-medium hover:bg-mocha-800 shadow-lg shadow-mocha-500/20 transition-colors"
               >
                 {initialData ? 'Save Changes' : 'Create Item'}
               </button>

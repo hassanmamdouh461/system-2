@@ -17,13 +17,14 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus }: MenuIte
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group relative ${!item.available ? 'opacity-75 grayscale-[0.5]' : ''}`}
+      className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group relative h-auto ${!item.available ? 'opacity-75 grayscale-[0.5]' : ''}`}
     >
-      <div className="h-48 overflow-hidden relative">
+      {/* Image Container - No Fixed Height */}
+      <div className="relative overflow-hidden">
         <img 
           src={item.image} 
           alt={item.name} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button 
@@ -46,6 +47,7 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus }: MenuIte
         )}
       </div>
 
+      {/* Text Content Below Image */}
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
           <div>
@@ -54,7 +56,7 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus }: MenuIte
               {item.category}
             </span>
           </div>
-          <span className="font-bold text-lg text-orange-500">${item.price.toFixed(2)}</span>
+          <span className="font-bold text-lg text-mocha-700">${item.price.toFixed(2)}</span>
         </div>
         <p className="text-gray-500 text-sm line-clamp-2 mb-4 h-10">{item.description}</p>
         

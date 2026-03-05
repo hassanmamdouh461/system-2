@@ -20,6 +20,153 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
     },
   });
 
+  const handlePrintInvoice = () => {
+    if (!order) return;
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow popups to print invoice');
+      return;
+    }
+
+    const subtotal = order.totalAmount;
+    const tax = subtotal * 0.1;
+    const total = subtotal + tax;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invoice - ${order.orderNumber}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: 'Courier New', monospace; 
+            padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+          }
+          .header { 
+            text-align: center; 
+            border-bottom: 2px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+          }
+          .header h1 { font-size: 24px; margin-bottom: 5px; }
+          .header p { font-size: 12px; color: #666; }
+          .info { margin: 15px 0; font-size: 14px; }
+          .info-row { 
+            display: flex; 
+            justify-content: space-between;
+            margin: 5px 0;
+          }
+          .items { 
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+            padding: 10px 0;
+            margin: 15px 0;
+          }
+          .item { 
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 14px;
+          }
+          .item-name { flex: 1; }
+          .totals { margin-top: 15px; font-size: 14px; }
+          .total-row { 
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+          }
+          .total-row.grand { 
+            font-size: 18px;
+            font-weight: bold;
+            border-top: 2px solid #000;
+            padding-top: 8px;
+            margin-top: 8px;
+          }
+          .footer { 
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px dashed #000;
+            font-size: 12px;
+          }
+          @media print {
+            body { padding: 10px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>BREWMASTER</h1>
+          <p>Premium Coffee Experience</p>
+          <p>Tel: (555) 123-4567</p>
+        </div>
+        
+        <div class="info">
+          <div class="info-row">
+            <strong>Order:</strong>
+            <span>${order.orderNumber}</span>
+          </div>
+          <div class="info-row">
+            <strong>Table:</strong>
+            <span>${order.tableId}</span>
+          </div>
+          <div class="info-row">
+            <strong>Date:</strong>
+            <span>${new Date(order.createdAt).toLocaleString()}</span>
+          </div>
+          <div class="info-row">
+            <strong>Status:</strong>
+            <span>${order.status}</span>
+          </div>
+        </div>
+
+        <div class="items">
+          <h3 style="margin-bottom: 10px;">Items:</h3>
+          ${order.items.map(item => `
+            <div class="item">
+              <span class="item-name">${item.quantity}x ${item.name}</span>
+              <span>$${(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="totals">
+          <div class="total-row">
+            <span>Subtotal:</span>
+            <span>$${subtotal.toFixed(2)}</span>
+          </div>
+          <div class="total-row">
+            <span>Tax (10%):</span>
+            <span>$${tax.toFixed(2)}</span>
+          </div>
+          <div class="total-row grand">
+            <span>TOTAL:</span>
+            <span>$${total.toFixed(2)}</span>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Thank you for choosing BrewMaster!</p>
+          <p>Enjoy your coffee ☕</p>
+        </div>
+
+        <script>
+          window.onload = () => {
+            window.print();
+            setTimeout(() => window.close(), 100);
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+  };
+
   return (
     <AnimatePresence>
       {order && (
@@ -56,7 +203,7 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
             {/* Header */}
             <div className="p-4 md:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <div>
-                <h2 className="text-lg md:text-xl font-bold text-gray-900">Order #{order.id.split('-')[1]}</h2>
+                <h2 className="text-lg md:text-xl font-bold text-gray-900">Order #{order.orderNumber}</h2>
                 <p className="text-sm text-gray-500">Table {order.tableId}</p>
               </div>
               <button 
@@ -72,13 +219,13 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
               {/* Status Stepper (Simplified) */}
               <div className="flex items-center justify-between text-sm">
                 <div className="flex flex-col items-center gap-2">
-                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-base ${['New', 'Preparing', 'Ready', 'Completed'].includes(order.status) ? 'bg-blue-500 text-white' : 'bg-gray-100'}`}>1</div>
+                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-base ${['New', 'Preparing', 'Ready', 'Completed'].includes(order.status) ? 'bg-mocha-700 text-white' : 'bg-gray-100'}`}>1</div>
                   <span className="text-xs">New</span>
                 </div>
                 <div className="h-0.5 flex-1 bg-gray-200 mx-2" />
                 <div className="flex flex-col items-center gap-2">
-                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-base ${['Preparing', 'Ready', 'Completed'].includes(order.status) ? 'bg-orange-500 text-white' : 'bg-gray-100'}`}>2</div>
-                  <span className="text-xs">Preparing</span>
+                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-base ${['Preparing', 'Ready', 'Completed'].includes(order.status) ? 'bg-caramel text-white' : 'bg-gray-100'}`}>2</div>
+                  <span className="text-xs">Brewing</span>
                 </div>
                 <div className="h-0.5 flex-1 bg-gray-200 mx-2" />
                 <div className="flex flex-col items-center gap-2">
@@ -126,17 +273,17 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
                 {order.status === 'New' && (
                   <button 
                     onClick={() => onUpdateStatus(order.id, 'Preparing')}
-                    className="mobile-touch-target col-span-2 bg-blue-600 text-white py-3 md:py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 tap-highlight-none active:scale-95 transition-transform"
+                    className="mobile-touch-target col-span-2 bg-mocha-700 text-white py-3 md:py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-mocha-800 tap-highlight-none active:scale-95 transition-transform"
                   >
-                    Start Preparing <ArrowRight size={18} />
+                    Start Brewing ☕ <ArrowRight size={18} />
                   </button>
                 )}
                 {order.status === 'Preparing' && (
                   <button 
                     onClick={() => onUpdateStatus(order.id, 'Ready')}
-                    className="mobile-touch-target col-span-2 bg-orange-500 text-white py-3 md:py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-orange-600 tap-highlight-none active:scale-95 transition-transform"
+                    className="mobile-touch-target col-span-2 bg-caramel text-white py-3 md:py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-caramel-dark tap-highlight-none active:scale-95 transition-transform"
                   >
-                    Mark as Ready <CheckCircle2 size={18} />
+                    Mark as Ready 🛎️ <CheckCircle2 size={18} />
                   </button>
                 )}
                 {order.status === 'Ready' && (
@@ -144,13 +291,16 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
                     onClick={() => onUpdateStatus(order.id, 'Completed')}
                     className="mobile-touch-target col-span-2 bg-green-600 text-white py-3 md:py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-green-700 tap-highlight-none active:scale-95 transition-transform"
                   >
-                    Complete Order <CheckCircle2 size={18} />
+                    Complete Order ✅ <CheckCircle2 size={18} />
                   </button>
                 )}
               </div>
               
               <div className="flex gap-3">
-                <button className="mobile-touch-target flex-1 py-3 border border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 tap-highlight-none active:scale-95 transition-transform">
+                <button 
+                  onClick={handlePrintInvoice}
+                  className="mobile-touch-target flex-1 py-3 border border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 tap-highlight-none active:scale-95 transition-transform"
+                >
                   <Printer size={18} /> Print Invoice
                 </button>
                 {order.status !== 'Cancelled' && order.status !== 'Completed' && (

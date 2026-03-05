@@ -4,24 +4,31 @@ import { OrderCard } from '../components/orders/OrderCard';
 import { OrderDetails } from '../components/orders/OrderDetails';
 import { Filter } from 'lucide-react';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export default function Orders() {
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+  // Use localStorage to persist orders - fallback to MOCK_ORDERS on first load
+  const [orders, setOrders] = useLocalStorage<Order[]>('brewmaster_orders', MOCK_ORDERS);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'All'>('All');
   const isMobile = useIsMobile();
 
   const handleUpdateStatus = (orderId: string, newStatus: OrderStatus) => {
-    setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    // Use functional update to avoid stale closures
+    setOrders(prevOrders => prevOrders.map(o => 
+      o.id === orderId ? { ...o, status: newStatus } : o
+    ));
+    
+    // Update selected order if it's the one being changed
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status: newStatus });
     }
   };
 
   const columns: { title: string; status: OrderStatus; color: string }[] = [
-    { title: 'New Orders', status: 'New', color: 'bg-blue-50 text-blue-700' },
-    { title: 'Preparing', status: 'Preparing', color: 'bg-orange-50 text-orange-700' },
-    { title: 'Ready', status: 'Ready', color: 'bg-green-50 text-green-700' },
+    { title: 'New Orders', status: 'New', color: 'bg-mocha-100 text-mocha-800' },
+    { title: 'Brewing ☕', status: 'Preparing', color: 'bg-caramel-light text-coffee-dark' },
+    { title: 'Ready for Pickup 🛎️', status: 'Ready', color: 'bg-green-50 text-green-700' },
   ];
 
   const filteredOrders = filterStatus === 'All' 
@@ -111,7 +118,7 @@ export default function Orders() {
               </div>
             ))}
 
-            {/* Completed / Cancelled Column (Combined/Optional) */}
+            {/* Completed Column */}
             <div className="flex-1 flex flex-col bg-gray-100/50 rounded-2xl p-4 border border-gray-200/50 opacity-75">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-gray-500">Completed</h3>

@@ -3,14 +3,17 @@ import { MOCK_ORDERS, Order, OrderStatus } from '../types/order';
 import { PaymentModal } from '../components/payment/PaymentModal';
 import { CreditCard, DollarSign, Search, Calculator } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export default function Payment() {
-  // Filter only active orders that are not settled (Completed/Cancelled)
-  // For demo, we also show 'Ready' orders as payable
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS.filter(o => ['New', 'Preparing', 'Ready'].includes(o.status)));
+  // Use localStorage to sync with Orders page
+  const [allOrders, setAllOrders] = useLocalStorage<Order[]>('brewmaster_orders', MOCK_ORDERS);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter only active orders that are not settled (Completed/Cancelled)
+  const orders = allOrders.filter(o => ['New', 'Preparing', 'Ready'].includes(o.status));
 
   const handleOpenPayment = (order: Order) => {
     setSelectedOrder(order);
@@ -19,13 +22,15 @@ export default function Payment() {
 
   const handlePaymentComplete = (orderId: string, method: 'Cash' | 'Card') => {
     console.log(`Payment completed for ${orderId} via ${method}`);
-    // Update local state to remove paid order or mark as completed
-    setOrders(orders.map(o => o.id === orderId ? { ...o, status: 'Completed' } : o));
+    // Use functional update to avoid stale closures
+    setAllOrders(prevOrders => prevOrders.map(o => 
+      o.id === orderId ? { ...o, status: 'Completed' as OrderStatus } : o
+    ));
   };
 
   const filteredOrders = orders.filter(o => 
     o.tableId.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    o.id.toLowerCase().includes(searchTerm.toLowerCase())
+    o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalRevenue = 4289.00; // Mock revenue
@@ -35,10 +40,10 @@ export default function Payment() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Payment & Invoicing</h1>
-          <p className="text-gray-500">Process payments and manage transactions.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Payment & Billing</h1>
+          <p className="text-gray-500">Process customer payments and view daily revenue.</p>
         </div>
-        <div className="bg-white px-6 py-3 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+        <div className="bg-white px-6 py-3 rounded-xl border border-mocha-100 shadow-sm flex items-center gap-3">
             <div className="p-2 bg-green-50 text-green-600 rounded-lg">
                 <DollarSign size={20} />
             </div>
@@ -57,7 +62,7 @@ export default function Payment() {
           placeholder="Search by Table or Order ID..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
+          className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent shadow-sm"
         />
       </div>
 
@@ -75,7 +80,7 @@ export default function Payment() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                    <h3 className="text-xl font-bold text-gray-900">{order.tableId}</h3>
-                   <p className="text-sm text-gray-500">order #{order.id.split('-')[1]}</p>
+                   <p className="text-sm text-gray-500">order #{order.orderNumber}</p>
                 </div>
                 <div className={`px-2 py-1 rounded-full text-xs font-bold ${
                    order.status === 'Ready' ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-700'

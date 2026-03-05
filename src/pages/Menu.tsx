@@ -1,47 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter } from 'lucide-react';
-import { MenuItem, CATEGORIES } from '../types/menu';
+import React, { useState } from 'react';
+import { Plus, Search, Filter, Coffee, Snowflake, Wine, IceCream } from 'lucide-react';
+import { MenuItem, CATEGORIES, INITIAL_MENU_ITEMS } from '../types/menu';
 import { MenuItemCard } from '../components/menu/MenuItemCard';
 import { MenuModal } from '../components/menu/MenuModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { databases, APPWRITE_CONFIG } from '../lib/appwrite';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export default function Menu() {
-  const [items, setItems] = useState<MenuItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Use localStorage to persist menu items - fallback to INITIAL_MENU_ITEMS on first load
+  const [items, setItems] = useLocalStorage<MenuItem[]>('brewmaster_menu', INITIAL_MENU_ITEMS);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-
-  useEffect(() => {
-    fetchMenu();
-  }, []);
-
-  const fetchMenu = async () => {
-    try {
-      const response = await databases.listDocuments(
-        APPWRITE_CONFIG.DB_ID, 
-        APPWRITE_CONFIG.COLLECTIONS.MENU
-      );
-      const mappedItems = response.documents.map((doc: any) => ({
-        id: doc.$id,
-        name: doc.name,
-        price: doc.price,
-        category: doc.category,
-        image: doc.image,
-        description: doc.description,
-        available: doc.available
-      }));
-      setItems(mappedItems);
-    } catch (error) {
-      console.error('Failed to fetch menu:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredItems = items.filter(item => {
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
@@ -50,14 +23,15 @@ export default function Menu() {
   });
 
   const handleToggleStatus = (id: string) => {
-    setItems(items.map(item => 
+    // Use functional update to avoid stale closures
+    setItems(prevItems => prevItems.map(item => 
       item.id === id ? { ...item, available: !item.available } : item
     ));
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this item?')) {
-      setItems(items.filter(item => item.id !== id));
+      setItems(prevItems => prevItems.filter(item => item.id !== id));
     }
   };
 
@@ -74,14 +48,16 @@ export default function Menu() {
   const handleSave = (itemData: MenuItem | Omit<MenuItem, 'id'>) => {
     if ('id' in itemData) {
       // Edit existing
-      setItems(items.map(item => item.id === itemData.id ? itemData as MenuItem : item));
+      setItems(prevItems => prevItems.map(item => 
+        item.id === itemData.id ? itemData as MenuItem : item
+      ));
     } else {
       // Add new
       const newItem = {
         ...itemData,
-        id: Math.random().toString(36).substr(2, 9),
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       } as MenuItem;
-      setItems([newItem, ...items]);
+      setItems(prevItems => [newItem, ...prevItems]);
     }
     setIsModalOpen(false);
   };
@@ -92,11 +68,11 @@ export default function Menu() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">Menu Management</h1>
-          <p className="text-sm md:text-base text-gray-500">Manage your food items, categories, and availability.</p>
+          <p className="text-sm md:text-base text-gray-500">Manage your coffee beverages, categories, and availability.</p>
         </div>
         <button 
           onClick={handleAddNew}
-          className="mobile-touch-target bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all active:scale-95 tap-highlight-none w-full md:w-auto"
+          className="mobile-touch-target bg-mocha-700 hover:bg-mocha-800 text-white px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-mocha-500/20 transition-all active:scale-95 tap-highlight-none w-full md:w-auto"
         >
           <Plus size={20} />
           Add New Item
@@ -113,8 +89,8 @@ export default function Menu() {
               onClick={() => setSelectedCategory(category)}
               className={`mobile-touch-target px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors tap-highlight-none ${
                 selectedCategory === category
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-mocha-700 text-white'
+                  : 'bg-mocha-100 text-mocha-800 hover:bg-mocha-200'
               }`}
             >
               {category}
@@ -130,7 +106,7 @@ export default function Menu() {
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 md:py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base"
+            className="w-full pl-10 pr-4 py-2.5 md:py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent text-base"
           />
         </div>
       </div>

@@ -26,7 +26,7 @@ export function MobileNav() {
                 className={({ isActive }) =>
                   `relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-300 mobile-touch-target tap-highlight-none ${
                     isActive 
-                      ? 'text-orange-600' 
+                      ? 'text-mocha-700' 
                       : 'text-gray-500 hover:text-gray-700'
                   }`
                 }
@@ -37,7 +37,7 @@ export function MobileNav() {
                     {isActive && (
                       <motion.div
                         layoutId="mobile-nav-indicator"
-                        className="absolute inset-0 bg-orange-50 rounded-xl border border-orange-100/50"
+                        className="absolute inset-0 bg-mocha-50 rounded-xl border border-mocha-100/50"
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                       />
                     )}

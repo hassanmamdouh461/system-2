@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChefHat, Utensils } from 'lucide-react';
+import { Coffee, Bean } from 'lucide-react';
 
 export function LoadingScreen() {
   return (
@@ -17,7 +17,7 @@ export function LoadingScreen() {
              repeat: Infinity,
              ease: "easeInOut"
            }}
-           className="absolute inset-0 bg-orange-500 rounded-full blur-xl"
+           className="absolute inset-0 bg-caramel rounded-full blur-xl"
         />
 
         {/* Logo Container */}
@@ -31,7 +31,7 @@ export function LoadingScreen() {
             animate={{ rotate: 360 }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           >
-            <Utensils className="w-16 h-16 text-orange-500" />
+            <Coffee className="w-16 h-16 text-caramel" />
           </motion.div>
         </motion.div>
 
@@ -41,7 +41,7 @@ export function LoadingScreen() {
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="absolute -top-12 -right-8 text-white/20"
         >
-          <ChefHat size={32} />
+          <Coffee size={32} />
         </motion.div>
       </div>
 
@@ -51,22 +51,22 @@ export function LoadingScreen() {
         transition={{ delay: 0.5 }}
         className="mt-8 text-center"
       >
-        <h1 className="text-3xl font-bold text-white mb-2">Resto<span className="text-orange-500">Pro</span></h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Brew<span className="text-caramel">Master</span></h1>
         <div className="flex items-center gap-1 justify-center">
           <motion.div 
             animate={{ height: [4, 12, 4] }}
             transition={{ duration: 1, repeat: Infinity, delay: 0 }}
-            className="w-1 bg-orange-500 rounded-full" 
+            className="w-1 bg-caramel rounded-full" 
           />
           <motion.div 
             animate={{ height: [4, 12, 4] }}
             transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
-            className="w-1 bg-orange-500 rounded-full" 
+            className="w-1 bg-caramel rounded-full" 
           />
           <motion.div 
             animate={{ height: [4, 12, 4] }}
             transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
-            className="w-1 bg-orange-500 rounded-full" 
+            className="w-1 bg-caramel rounded-full" 
           />
         </div>
         <p className="text-gray-500 text-sm mt-4 font-medium tracking-widest uppercase">Loading System</p>

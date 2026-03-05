@@ -67,10 +67,12 @@ async function main() {
         ]);
         console.log('✅ Orders Collection created');
 
+        await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'orderNumber', 50, true);
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'tableId', 50, true);
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'status', 50, true);
         await db.createFloatAttribute(CONFIG.DB_ID, ordersCollId, 'totalAmount', true);
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'items_json', 10000, true); // Storing items as JSON for simplicity in this demo
+        await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'createdAt', 100, true);
         
         console.log('⏳ Waiting for attributes to index...');
         await wait(2000);
@@ -102,14 +104,16 @@ async function main() {
     for (const order of MOCK_ORDERS) {
         try {
              await db.createDocument(CONFIG.DB_ID, ordersCollId, ID.unique(), {
+                orderNumber: order.orderNumber,
                 tableId: order.tableId,
                 status: order.status,
                 totalAmount: order.totalAmount,
-                items_json: JSON.stringify(order.items)
+                items_json: JSON.stringify(order.items),
+                createdAt: order.createdAt
             });
-            console.log(`   + Added Order: ${order.id}`);
+            console.log(`   + Added Order: ${order.orderNumber}`);
         } catch (e) {
-            console.log(`   * Skipped Order: ${order.id}`);
+            console.log(`   * Skipped Order: ${order.orderNumber}`);
         }
     }
 

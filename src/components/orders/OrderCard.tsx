@@ -18,10 +18,10 @@ const statusColors: Record<OrderStatus, { bg: string; text: string; gradient: st
     icon: 'text-blue-600'
   },
   Preparing: { 
-    bg: 'bg-orange-50', 
-    text: 'text-orange-700', 
-    gradient: 'from-orange-400 to-pink-400',
-    icon: 'text-orange-600'
+    bg: 'bg-amber-50', 
+    text: 'text-amber-700', 
+    gradient: 'from-amber-400 to-orange-400',
+    icon: 'text-amber-600'
   },
   Ready: { 
     bg: 'bg-green-50', 
@@ -64,12 +64,12 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
       className={clsx(
         "mobile-touch-target cursor-pointer p-4 rounded-2xl transition-all relative overflow-hidden group",
         selected 
-          ? "bg-white shadow-xl shadow-orange-500/20 border-2 border-orange-500/30" 
+          ? "bg-white shadow-xl shadow-caramel/20 border-2 border-caramel/30" 
           : "bg-white/90 backdrop-blur-sm shadow-md hover:shadow-xl border border-gray-200/50 hover:border-gray-300/50"
       )}
     >
       {/* Soft gradient overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-50/0 to-pink-50/0 group-hover:from-orange-50/20 group-hover:to-pink-50/20 transition-all duration-300 pointer-events-none rounded-2xl" />
+      <div className="absolute inset-0 bg-gradient-to-br from-mocha-50/0 to-caramel-light/0 group-hover:from-mocha-50/20 group-hover:to-caramel-light/20 transition-all duration-300 pointer-events-none rounded-2xl" />
 
       {/* Content */}
       <div className="relative z-10">
@@ -78,7 +78,7 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
           <div className="flex items-center gap-2">
             <span className="font-bold text-lg text-gray-900">{order.tableId}</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">
-              #{order.id.split('-')[1]}
+              #{order.orderNumber}
             </span>
           </div>
           
@@ -99,7 +99,7 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
           {order.items.slice(0, 3).map((item, idx) => (
             <div key={idx} className="flex justify-between text-sm items-center">
               <span className="text-gray-600">
-                <span className="inline-flex items-center justify-center min-w-[24px] h-6 rounded-lg bg-orange-50 text-orange-600 font-bold text-xs mr-2 px-1.5 border border-orange-100/50">
+                <span className="inline-flex items-center justify-center min-w-[24px] h-6 rounded-lg bg-mocha-50 text-mocha-700 font-bold text-xs mr-2 px-1.5 border border-mocha-100/50">
                   {item.quantity}×
                 </span>
                 {item.name}
@@ -123,7 +123,7 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
               {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
-          <span className="font-bold text-lg text-orange-600">
+          <span className="font-bold text-lg text-mocha-700">
             ${order.totalAmount.toFixed(2)}
           </span>
         </div>

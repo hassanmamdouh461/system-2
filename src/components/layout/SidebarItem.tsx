@@ -21,7 +21,7 @@ export function SidebarItem({ icon: Icon, label, to, collapsed, onClick }: Sideb
         clsx(
           "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group relative",
           isActive 
-            ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20" 
+            ? "bg-mocha-600 text-white shadow-lg shadow-mocha-500/20" 
             : "text-gray-400 hover:bg-gray-800 hover:text-white"
         )
       }

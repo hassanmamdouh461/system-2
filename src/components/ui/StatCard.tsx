@@ -52,18 +52,18 @@ export function StatCard({ label, value, icon: Icon, trend, color }: StatCardPro
       <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-300`} />
       
       <div className="relative z-10">
-        <div className="flex justify-between items-start mb-3 md:mb-4">
+        <div className="flex justify-between items-start mb-3 md:mb-4 gap-1">
           {/* Icon with soft gradient */}
           <motion.div 
             whileHover={{ rotate: 15, scale: 1.05 }}
             transition={{ duration: 0.3 }}
-            className={`p-2.5 md:p-3 rounded-xl ${colors.iconBg} ${colors.iconText} shadow-sm border border-current/10`}
+            className={`p-2 md:p-3 rounded-xl ${colors.iconBg} ${colors.iconText} shadow-sm border border-current/10 shrink-0`}
           >
-            <Icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2} />
+            <Icon className="w-4 h-4 md:w-6 md:h-6" strokeWidth={2} />
           </motion.div>
           
-          {/* Trend badge - softer */}
-          <span className="text-xs font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg border border-green-100/50 shadow-sm">
+          {/* Trend badge - responsive */}
+          <span className="text-[10px] md:text-xs font-semibold text-green-600 bg-green-50 px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-lg border border-green-100/50 shadow-sm text-right min-w-0 leading-tight max-w-[62%] line-clamp-2">
             {trend}
           </span>
         </div>

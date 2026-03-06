@@ -88,8 +88,8 @@ export default function Orders() {
         </div>
         
         {/* Filters */}
-        <div className="overflow-x-auto hide-scrollbar -mx-3 px-3 md:mx-0 md:px-0">
-          <div className="bg-white border border-gray-200 rounded-lg p-1 flex gap-1 min-w-max md:min-w-0">
+        <div className="overflow-x-auto hide-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
+          <div className="bg-white border border-gray-200 rounded-lg p-1 flex gap-1 w-max sm:w-auto">
             {(['All', 'New', 'Preparing', 'Ready', 'Completed', 'Cancelled'] as const).map(status => (
               <button
                 key={status}

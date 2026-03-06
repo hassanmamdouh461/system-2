@@ -14,6 +14,8 @@
     touch-action: pan-x pan-y; /* Allow panning but prevent zoom and other gestures */
     -webkit-user-select: none; /* Prevent text selection on touch */
     user-select: none;
+    overflow-x: hidden; /* Prevent horizontal overflow on mobile */
+    max-width: 100vw;
   }
 
   /* Allow text selection in specific elements */

@@ -8,7 +8,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -18,16 +18,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = async (username: string) => {
-    // Mock login delay
+  // ── Registered accounts ────────────────────────────────────────────────
+  const ACCOUNTS: Array<{ username: string; password: string; name: string; role: 'admin' | 'staff' }> = [
+    { username: 'admin', password: '123', name: 'Admin User', role: 'admin' },
+  ];
+
+  const login = async (username: string, password: string) => {
     await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Simple mock authentication
-    setUser({
-      id: '1',
-      name: username || 'Admin User',
-      role: 'admin',
-    });
+    const match = ACCOUNTS.find(
+      a => a.username.toLowerCase() === username.trim().toLowerCase() && a.password === password
+    );
+    if (!match) throw new Error('Invalid username or password');
+    setUser({ id: '1', name: match.name, role: match.role });
   };
 
   const logout = () => {

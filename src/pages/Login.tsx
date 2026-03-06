@@ -30,7 +30,7 @@ export default function Login() {
     setLoading(true);
     try {
       if (!username || !password) throw new Error('Please fill in all fields');
-      await login(username);
+      await login(username, password);
       // ── Persist / clear based on checkbox ─────────────────────────────────
       if (rememberMe) {
         localStorage.setItem(LS_KEY, username);

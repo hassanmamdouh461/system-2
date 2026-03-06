@@ -1,5 +1,5 @@
 import { databases, directCreate, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
-import { Order, OrderStatus } from '../types/order';
+import { Order, OrderStatus, PaymentStatus } from '../types/order';
 import { ID } from 'appwrite';
 
 /**
@@ -38,6 +38,7 @@ export const ordersService = {
           tableId: doc.tableId,
           items: items,
           status: doc.status as OrderStatus,
+          paymentStatus: (doc.paymentStatus as PaymentStatus) ?? 'Unpaid',
           totalAmount: doc.totalAmount,
           createdAt: doc.createdAt,
         };
@@ -58,6 +59,7 @@ export const ordersService = {
         tableId: String(order.tableId),
         items: JSON.stringify(order.items),
         status: String(order.status),
+        paymentStatus: order.paymentStatus ?? 'Unpaid',
         totalAmount: Number(order.totalAmount),
         createdAt: order.createdAt
           ? new Date(order.createdAt).toISOString()
@@ -76,6 +78,7 @@ export const ordersService = {
         tableId: response.tableId,
         items,
         status: response.status,
+        paymentStatus: (response.paymentStatus as PaymentStatus) ?? 'Unpaid',
         totalAmount: response.totalAmount,
         createdAt: response.createdAt,
       };
@@ -108,6 +111,7 @@ export const ordersService = {
         tableId: response.tableId,
         items: items,
         status: response.status,
+        paymentStatus: (response.paymentStatus as PaymentStatus) ?? 'Unpaid',
         totalAmount: response.totalAmount,
         createdAt: response.createdAt,
       };
@@ -127,6 +131,7 @@ export const ordersService = {
       if (data.tableId !== undefined) cleanData.tableId = data.tableId;
       if (data.items !== undefined) cleanData.items = JSON.stringify(data.items);
       if (data.status !== undefined) cleanData.status = String(data.status);
+      if (data.paymentStatus !== undefined) cleanData.paymentStatus = String(data.paymentStatus);
       if (data.totalAmount !== undefined) cleanData.totalAmount = Number(data.totalAmount);
       if (data.createdAt !== undefined) cleanData.createdAt = data.createdAt;
 
@@ -148,12 +153,47 @@ export const ordersService = {
         tableId: response.tableId,
         items: items,
         status: response.status,
+        paymentStatus: (response.paymentStatus as PaymentStatus) ?? 'Unpaid',
         totalAmount: response.totalAmount,
         createdAt: response.createdAt,
       };
     } catch (error) {
       console.error('[ordersService] Error updating order:', error);
       throw new Error('Failed to update order');
+    }
+  },
+
+  /**
+   * Mark an order as Completed AND Paid — called exclusively from Payment.tsx.
+   * This is the ONLY path that sets paymentStatus = 'Paid', ensuring revenue
+   * is never counted for orders closed from the kitchen screen.
+   */
+  async completeWithPayment(id: string): Promise<Order> {
+    try {
+      const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id, {
+        status: 'Completed',
+        paymentStatus: 'Paid',
+      });
+
+      let items = response.items;
+      if (typeof items === 'string') {
+        try { items = JSON.parse(items); } catch { items = []; }
+      }
+      if (!Array.isArray(items)) items = [];
+
+      return {
+        id: response.$id,
+        orderNumber: response.orderNumber,
+        tableId: response.tableId,
+        items,
+        status: response.status,
+        paymentStatus: 'Paid',
+        totalAmount: response.totalAmount,
+        createdAt: response.createdAt,
+      };
+    } catch (error) {
+      console.error('[ordersService] Error completing order with payment:', error);
+      throw new Error('Failed to complete payment');
     }
   },
 

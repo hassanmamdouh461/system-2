@@ -70,6 +70,7 @@ async function main() {
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'orderNumber', 50, true);
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'tableId', 50, true);
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'status', 50, true);
+        await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'paymentStatus', 20, false, 'Unpaid');
         await db.createFloatAttribute(CONFIG.DB_ID, ordersCollId, 'totalAmount', true);
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'items', 10000, true); // Storing items as JSON string
         await db.createStringAttribute(CONFIG.DB_ID, ordersCollId, 'createdAt', 100, true);
@@ -107,6 +108,7 @@ async function main() {
                 orderNumber: order.orderNumber,
                 tableId: order.tableId,
                 status: order.status,
+                paymentStatus: order.paymentStatus ?? 'Unpaid',
                 totalAmount: order.totalAmount,
                 items: JSON.stringify(order.items),
                 createdAt: order.createdAt

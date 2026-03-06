@@ -1,34 +1,97 @@
-import React from 'react';
-import { ShoppingBag, DollarSign, Utensils, TrendingUp, PlusCircle, FileText, Coffee, Users, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { ShoppingBag, DollarSign, Utensils, PlusCircle, FileText, Coffee, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 import { StatCard } from '../components/ui/StatCard';
 import { useNavigate } from 'react-router-dom';
+import { useOrders } from '../hooks/useOrders';
+import { useAnalytics } from '../hooks/useAnalytics';
+import { NewOrderModal } from '../components/orders/NewOrderModal';
+import { OrderItem } from '../types/order';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  // ── Unified analytics — fixed to 'Today' period ────────────────────────────
+  // Numbers here = BASELINE['Today'] + real completed orders today.
+  // When Reports.tsx is on 'Today', every number matches this exactly.
+  const analytics = useAnalytics('Today');
+  const { addOrder } = useOrders();          // mutation only — no extra fetch
+  const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
 
-  const stats = [
-    { label: 'Total Orders', value: '124', icon: ShoppingBag, trend: '+12%', color: 'blue' },
-    { label: 'Total Sales', value: '$4,289', icon: DollarSign, trend: '+8%', color: 'green' },
-    { label: 'Open Orders', value: '8', icon: Coffee, trend: 'Active', color: 'orange' },
-    { label: 'Total Customers', value: '1,240', icon: Users, trend: '+24%', color: 'purple' },
-  ];
+  // ── Stat cards ─────────────────────────────────────────────────────────────
+  const stats = useMemo(() => [
+    {
+      label: 'Total Orders',
+      value: analytics.totalOrders.toLocaleString(),
+      icon: ShoppingBag,
+      trend: analytics.realOrders > 0 ? `+${analytics.realOrders} today` : 'Daily total',
+      color: 'blue',
+    },
+    {
+      label: "Today's Revenue",
+      value: `$${analytics.totalRevenue.toFixed(0)}`,
+      icon: DollarSign,
+      trend: analytics.realRevenue > 0 ? `+$${analytics.realRevenue.toFixed(2)} live` : 'Daily total',
+      color: 'green',
+    },
+    {
+      label: 'Open Orders',
+      value: analytics.openOrders.toString(),
+      icon: Coffee,
+      trend: analytics.openOrders > 0 ? 'Active now' : 'All clear',
+      color: 'orange',
+    },
+    {
+      label: 'Menu Items',
+      value: analytics.menuItemsCount.toString(),
+      icon: Utensils,
+      trend: `${analytics.availableMenuItemsCount} available`,
+      color: 'purple',
+    },
+  ], [analytics]);
+
+  // ── Recent activity: live feed of newest 5 orders app-wide ─────────────────
+  const recentActivity = useMemo(() => {
+    const iconMap: Record<string, { icon: any; color: string }> = {
+      Completed: { icon: CheckCircle2,  color: 'text-green-500 bg-green-50' },
+      New:       { icon: Coffee,        color: 'text-mocha-700 bg-mocha-50' },
+      Preparing: { icon: Clock,         color: 'text-amber-500 bg-amber-50' },
+      Ready:     { icon: AlertTriangle, color: 'text-blue-500 bg-blue-50'   },
+      Cancelled: { icon: AlertTriangle, color: 'text-red-500 bg-red-50'     },
+    };
+    return analytics.recentOrders.map(o => {
+      const summary = o.items.slice(0, 2).map(i => `${i.quantity}x ${i.name}`).join(', ');
+      const more    = o.items.length > 2 ? ` +${o.items.length - 2} more` : '';
+      const elapsed = Math.round((Date.now() - new Date(o.createdAt).getTime()) / 60000);
+      const time    = elapsed < 1 ? 'just now' : elapsed < 60 ? `${elapsed} min ago` : `${Math.round(elapsed / 60)}h ago`;
+      const label   = o.status === 'New' ? 'New order' : o.status;
+      const { icon, color } = iconMap[o.status] ?? iconMap.New;
+      return { icon, color, text: `${label} #${o.orderNumber} — ${summary}${more}`, time };
+    });
+  }, [analytics.recentOrders]);
+
+  const handleCreateOrder = async (tableId: string, items: OrderItem[]) => {
+    const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const orderNumber = `ORD-${Date.now().toString().slice(-4)}`;
+    await addOrder({
+      orderNumber,
+      tableId,
+      items,
+      status: 'New',
+      totalAmount,
+      createdAt: new Date().toISOString(),
+    });
+  };
+
+  const menuItems = analytics.menuItems; // exposed by hook — no extra useMenu() needed
 
   const quickActions = [
-    { label: 'New Order', icon: PlusCircle, color: 'bg-mocha-700', hover: 'hover:bg-mocha-800', path: '/orders' },
-    { label: 'Manage Menu', icon: Coffee, color: 'bg-caramel', hover: 'hover:bg-caramel-dark', path: '/menu' },
-    { label: 'View Reports', icon: FileText, color: 'bg-mocha-600', hover: 'hover:bg-mocha-700', path: '/reports' },
-    { label: 'Payment', icon: DollarSign, color: 'bg-coffee', hover: 'hover:bg-coffee-dark', path: '/payment' },
-  ];
-
-  const recentActivity = [
-    { icon: CheckCircle2, color: 'text-green-500 bg-green-50', text: 'Order #1008 completed — 2x Espresso, Cappuccino', time: '2 min ago' },
-    { icon: AlertTriangle, color: 'text-amber-500 bg-amber-50', text: 'Inventory: Whole Milk running low (< 3L left)', time: '15 min ago' },
-    { icon: Coffee, color: 'text-mocha-700 bg-mocha-50', text: 'New order #1009 placed — Spanish Latte, Mocha Frappe', time: '20 min ago' },
-    { icon: CheckCircle2, color: 'text-green-500 bg-green-50', text: 'Order #1007 picked up by customer at T-5', time: '35 min ago' },
-    { icon: Clock, color: 'text-blue-500 bg-blue-50', text: 'Shift change: Evening barista Ahmed clocked in', time: '1 hr ago' },
+    { label: 'New Order', icon: PlusCircle, color: 'bg-mocha-700', hover: 'hover:bg-mocha-800', action: () => setIsNewOrderOpen(true) },
+    { label: 'Manage Menu', icon: Coffee, color: 'bg-caramel', hover: 'hover:bg-caramel-dark', action: () => navigate('/menu') },
+    { label: 'View Reports', icon: FileText, color: 'bg-mocha-600', hover: 'hover:bg-mocha-700', action: () => navigate('/reports') },
+    { label: 'Payment', icon: DollarSign, color: 'bg-coffee', hover: 'hover:bg-coffee-dark', action: () => navigate('/payment') },
   ];
 
   return (
+    <>
     <div className="space-y-4 md:space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 md:gap-0">
@@ -59,7 +122,7 @@ export default function Dashboard() {
               return (
                 <button
                   key={index}
-                  onClick={() => navigate(action.path)}
+                  onClick={action.action}
                   className={`mobile-touch-target ${action.color} ${action.hover} text-white p-4 md:p-6 rounded-xl flex flex-col items-center justify-center gap-2 md:gap-3 transition-all shadow-lg shadow-gray-200 active:scale-95 tap-highlight-none`}
                 >
                   <Icon className="w-6 h-6 md:w-8 md:h-8" />
@@ -74,7 +137,9 @@ export default function Dashboard() {
         <div className="bg-white p-3 md:p-6 rounded-2xl shadow-sm border border-gray-100">
           <h2 className="text-sm md:text-lg font-bold text-gray-900 mb-3 md:mb-6">Recent Activity</h2>
           <div className="space-y-3 md:space-y-4">
-            {recentActivity.map((activity, index) => {
+            {recentActivity.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">No recent activity</p>
+            ) : recentActivity.map((activity, index) => {
               const Icon = activity.icon;
               return (
                 <div key={index} className="flex items-start gap-3">
@@ -92,5 +157,12 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+    <NewOrderModal
+      isOpen={isNewOrderOpen}
+      onClose={() => setIsNewOrderOpen(false)}
+      menuItems={menuItems}
+      onSubmit={handleCreateOrder}
+    />
+  </>
   );
 }

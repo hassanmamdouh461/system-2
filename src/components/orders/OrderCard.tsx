@@ -116,7 +116,7 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between items-center text-xs pt-3 border-t border-gray-100">
+        <div className="flex items-center text-xs pt-3 border-t border-gray-100">
           <div className="flex items-center gap-1.5 text-gray-500">
             <div className="p-1 rounded-lg bg-gray-100">
               <Clock size={12} />
@@ -125,9 +125,6 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
               {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
-          <span className="font-bold text-lg text-mocha-700">
-            ${order.totalAmount.toFixed(2)}
-          </span>
         </div>
       </div>
     </motion.div>

@@ -8,15 +8,16 @@ import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 export default function Payment() {
   // Use Appwrite - sync with Orders page
-  const { orders: allOrders, loading, error, updateOrderStatus } = useOrders();
+  const { orders: allOrders, loading, error, completeWithPayment } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter only active orders that are not settled (Completed/Cancelled)
-  const orders = useMemo(() => 
-    allOrders.filter(o => ['New', 'Preparing', 'Ready'].includes(o.status)
-  ), [allOrders]);
+  // Show all orders pending payment — regardless of kitchen status.
+  // An order leaves this screen ONLY when paymentStatus becomes 'Paid'.
+  const orders = useMemo(() =>
+    allOrders.filter(o => o.paymentStatus === 'Unpaid' && o.status !== 'Cancelled'),
+  [allOrders]);
 
   const handleOpenPayment = (order: Order) => {
     setSelectedOrder(order);
@@ -26,7 +27,7 @@ export default function Payment() {
   const handlePaymentComplete = async (orderId: string, method: 'Cash' | 'Card') => {
     console.log(`Payment completed for ${orderId} via ${method}`);
     try {
-      await updateOrderStatus(orderId, 'Completed');
+      await completeWithPayment(orderId);
     } catch (error) {
       console.error('Failed to complete payment:', error);
       alert('Failed to complete payment');
@@ -50,7 +51,10 @@ export default function Payment() {
     );
   }
 
-  const totalRevenue = 4289.00; // Mock revenue
+  const today = new Date().toDateString();
+  const totalRevenue = allOrders
+    .filter(o => o.paymentStatus === 'Paid' && new Date(o.createdAt).toDateString() === today)
+    .reduce((sum, o) => sum + o.totalAmount, 0);
 
   return (
     <div className="space-y-4 md:space-y-8">
@@ -66,7 +70,7 @@ export default function Payment() {
             </div>
             <div>
                 <p className="text-[10px] md:text-xs text-gray-500 font-medium">Today's Revenue</p>
-                <p className="text-base md:text-lg font-bold text-gray-900">${totalRevenue.toLocaleString()}</p>
+                <p className="text-base md:text-lg font-bold text-gray-900">${totalRevenue.toFixed(2)}</p>
             </div>
         </div>
       </div>
@@ -100,9 +104,11 @@ export default function Payment() {
                    <p className="text-sm text-gray-500">order #{order.orderNumber}</p>
                 </div>
                 <div className={`px-2 py-1 rounded-full text-xs font-bold ${
-                   order.status === 'Ready' ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-700'
+                   order.status === 'Completed' ? 'bg-purple-100 text-purple-700' :
+                   order.status === 'Ready'     ? 'bg-green-100 text-green-700'  :
+                                                  'bg-blue-50 text-blue-700'
                 }`}>
-                   {order.status}
+                   {order.status === 'Completed' ? '✓ Ready to Pay' : order.status}
                 </div>
               </div>
 

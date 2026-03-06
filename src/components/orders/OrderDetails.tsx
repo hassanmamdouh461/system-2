@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Order, OrderStatus } from '../../types/order';
-import { X, Clock, Printer, CheckCircle2, XCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { X, Clock, CheckCircle2, XCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useSwipe } from '../../hooks/useSwipe';
 import { useIsMobile } from '../../hooks/useIsMobile';
 
@@ -19,153 +19,6 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
       if (isMobile) onClose();
     },
   });
-
-  const handlePrintInvoice = () => {
-    if (!order) return;
-    
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      alert('Please allow popups to print invoice');
-      return;
-    }
-
-    const subtotal = order.totalAmount;
-    const tax = subtotal * 0.1;
-    const total = subtotal + tax;
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Invoice - ${order.orderNumber}</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { 
-            font-family: 'Courier New', monospace; 
-            padding: 20px;
-            max-width: 400px;
-            margin: 0 auto;
-          }
-          .header { 
-            text-align: center; 
-            border-bottom: 2px dashed #000;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-          }
-          .header h1 { font-size: 24px; margin-bottom: 5px; }
-          .header p { font-size: 12px; color: #666; }
-          .info { margin: 15px 0; font-size: 14px; }
-          .info-row { 
-            display: flex; 
-            justify-content: space-between;
-            margin: 5px 0;
-          }
-          .items { 
-            border-top: 1px dashed #000;
-            border-bottom: 1px dashed #000;
-            padding: 10px 0;
-            margin: 15px 0;
-          }
-          .item { 
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            font-size: 14px;
-          }
-          .item-name { flex: 1; }
-          .totals { margin-top: 15px; font-size: 14px; }
-          .total-row { 
-            display: flex;
-            justify-content: space-between;
-            margin: 5px 0;
-          }
-          .total-row.grand { 
-            font-size: 18px;
-            font-weight: bold;
-            border-top: 2px solid #000;
-            padding-top: 8px;
-            margin-top: 8px;
-          }
-          .footer { 
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 10px;
-            border-top: 1px dashed #000;
-            font-size: 12px;
-          }
-          @media print {
-            body { padding: 10px; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>BREWMASTER</h1>
-          <p>Premium Coffee Experience</p>
-          <p>Tel: (555) 123-4567</p>
-        </div>
-        
-        <div class="info">
-          <div class="info-row">
-            <strong>Order:</strong>
-            <span>${order.orderNumber}</span>
-          </div>
-          <div class="info-row">
-            <strong>Table:</strong>
-            <span>${order.tableId}</span>
-          </div>
-          <div class="info-row">
-            <strong>Date:</strong>
-            <span>${new Date(order.createdAt).toLocaleString()}</span>
-          </div>
-          <div class="info-row">
-            <strong>Status:</strong>
-            <span>${order.status}</span>
-          </div>
-        </div>
-
-        <div class="items">
-          <h3 style="margin-bottom: 10px;">Items:</h3>
-          ${order.items.map(item => `
-            <div class="item">
-              <span class="item-name">${item.quantity}x ${item.name}</span>
-              <span>$${(item.price * item.quantity).toFixed(2)}</span>
-            </div>
-          `).join('')}
-        </div>
-
-        <div class="totals">
-          <div class="total-row">
-            <span>Subtotal:</span>
-            <span>$${subtotal.toFixed(2)}</span>
-          </div>
-          <div class="total-row">
-            <span>Tax (10%):</span>
-            <span>$${tax.toFixed(2)}</span>
-          </div>
-          <div class="total-row grand">
-            <span>TOTAL:</span>
-            <span>$${total.toFixed(2)}</span>
-          </div>
-        </div>
-
-        <div class="footer">
-          <p>Thank you for choosing BrewMaster!</p>
-          <p>Enjoy your coffee ☕</p>
-        </div>
-
-        <script>
-          window.onload = () => {
-            window.print();
-            setTimeout(() => window.close(), 100);
-          };
-        </script>
-      </body>
-      </html>
-    `);
-    
-    printWindow.document.close();
-  };
 
   return (
     <AnimatePresence>
@@ -247,32 +100,13 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
               <div className="space-y-4">
                 <h3 className="font-semibold text-gray-900">Items</h3>
                 {order.items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-3 md:p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <span className="bg-white w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-md border border-gray-200 font-bold text-sm">
-                        {item.quantity}x
-                      </span>
-                      <span className="font-medium text-gray-700 text-sm md:text-base">{item.name}</span>
-                    </div>
-                    <span className="font-semibold text-gray-900">${(item.price * item.quantity).toFixed(2)}</span>
+                  <div key={idx} className="flex items-center p-3 md:p-4 bg-gray-50 rounded-lg gap-3">
+                    <span className="bg-white w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-md border border-gray-200 font-bold text-sm shrink-0">
+                      {item.quantity}x
+                    </span>
+                    <span className="font-medium text-gray-700 text-sm md:text-base">{item.name}</span>
                   </div>
                 ))}
-              </div>
-
-              {/* Summary */}
-              <div className="border-t border-gray-100 pt-4 space-y-2">
-                <div className="flex justify-between text-gray-500 text-sm md:text-base">
-                  <span>Subtotal</span>
-                  <span>${order.totalAmount.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-gray-500 text-sm md:text-base">
-                  <span>Tax (10%)</span>
-                  <span>${(order.totalAmount * 0.1).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-lg md:text-xl font-bold text-gray-900 pt-2">
-                  <span>Total</span>
-                  <span>${(order.totalAmount * 1.1).toFixed(2)}</span>
-                </div>
               </div>
             </div>
 
@@ -306,20 +140,14 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
               </div>
               
               <div className="flex gap-3">
-                <button 
-                  onClick={handlePrintInvoice}
-                  className="mobile-touch-target flex-1 py-3 border border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 tap-highlight-none active:scale-95 transition-transform"
-                >
-                  <Printer size={18} /> Print Invoice
-                </button>
                 {order.status !== 'Cancelled' && order.status !== 'Completed' && (
                   <button 
                     onClick={() => {
                         if(confirm('Cancel this order?')) onUpdateStatus(order.id, 'Cancelled');
                     }}
-                    className="mobile-touch-target px-4 py-3 border border-red-200 text-red-600 rounded-xl font-semibold hover:bg-red-50 tap-highlight-none active:scale-95 transition-transform"
+                    className="mobile-touch-target flex-1 px-4 py-3 border border-red-200 text-red-600 rounded-xl font-semibold hover:bg-red-50 flex items-center justify-center gap-2 tap-highlight-none active:scale-95 transition-transform"
                   >
-                    <XCircle size={18} />
+                    <XCircle size={18} /> Cancel Order
                   </button>
                 )}
               </div>

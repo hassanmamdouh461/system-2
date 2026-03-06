@@ -3,6 +3,7 @@ import { MenuItem } from '../types/menu';
 import { Order, OrderStatus } from '../types/order';
 import { menuService } from '../services/menuService';
 import { ordersService } from '../services/ordersService';
+import { client, APPWRITE_CONFIG } from '../lib/appwrite';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,7 @@ interface OrdersState {
   error: Error | null;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
+  completeWithPayment: (id: string) => Promise<void>;
   updateOrder: (id: string, data: Partial<Omit<Order, 'id'>>) => Promise<void>;
   deleteOrder: (id: string) => Promise<void>;
   refetch: () => Promise<void>;
@@ -84,7 +86,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Fetch once on mount
+  // Fetch once on mount + setup realtime
   useEffect(() => {
     if (!menuFetched.current) {
       menuFetched.current = true;
@@ -94,6 +96,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       ordersFetched.current = true;
       fetchOrders();
     }
+
+    // Realtime subscription - refetch when orders or menu change externally
+    const ordersChannel = `databases.${APPWRITE_CONFIG.DB_ID}.collections.${APPWRITE_CONFIG.COLLECTIONS.ORDERS}.documents`;
+    const menuChannel = `databases.${APPWRITE_CONFIG.DB_ID}.collections.${APPWRITE_CONFIG.COLLECTIONS.MENU}.documents`;
+
+    const unsubscribe = client.subscribe([ordersChannel, menuChannel], (response) => {
+      const channels = response.channels as string[];
+      if (channels.some(c => c.includes(APPWRITE_CONFIG.COLLECTIONS.ORDERS))) {
+        fetchOrders();
+      }
+      if (channels.some(c => c.includes(APPWRITE_CONFIG.COLLECTIONS.MENU))) {
+        fetchMenu();
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [fetchMenu, fetchOrders]);
 
   // ── Menu mutations ────────────────────────────────────────────────────────────
@@ -149,6 +169,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ordersList]);
 
+  const completeWithPayment = useCallback(async (id: string) => {
+    const oldOrders = ordersList;
+    setOrdersList(prev => prev.map(o =>
+      o.id === id ? { ...o, status: 'Completed', paymentStatus: 'Paid' } : o
+    ));
+    try {
+      await ordersService.completeWithPayment(id);
+    } catch (err) {
+      setOrdersList(oldOrders);
+      throw err;
+    }
+  }, [ordersList]);
+
   const updateOrder = useCallback(async (id: string, data: Partial<Omit<Order, 'id'>>) => {
     const oldOrders = ordersList;
     setOrdersList(prev => prev.map(o => o.id === id ? { ...o, ...data } : o));
@@ -190,6 +223,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       error: ordersError,
       addOrder,
       updateOrderStatus,
+      completeWithPayment,
       updateOrder,
       deleteOrder,
       refetch: fetchOrders,

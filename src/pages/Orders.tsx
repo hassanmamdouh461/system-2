@@ -1,16 +1,34 @@
 import React, { useState } from 'react';
-import { Order, OrderStatus } from '../types/order';
+import { Order, OrderStatus, OrderItem } from '../types/order';
 import { OrderCard } from '../components/orders/OrderCard';
 import { OrderDetails } from '../components/orders/OrderDetails';
+import { NewOrderModal } from '../components/orders/NewOrderModal';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useOrders } from '../hooks/useOrders';
+import { useMenu } from '../hooks/useMenu';
+import { PlusCircle } from 'lucide-react';
 
 export default function Orders() {
   // Use Appwrite for real-time data persistence
-  const { orders, loading, error, updateOrderStatus } = useOrders();
+  const { orders, loading, error, updateOrderStatus, addOrder } = useOrders();
+  const { items: menuItems } = useMenu();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'All'>('All');
+  const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  const handleCreateOrder = async (tableId: string, items: OrderItem[]) => {
+    const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const orderNumber = `ORD-${Date.now().toString().slice(-4)}`;
+    await addOrder({
+      orderNumber,
+      tableId,
+      items,
+      status: 'New',
+      totalAmount,
+      createdAt: new Date().toISOString(),
+    });
+  };
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
@@ -57,6 +75,14 @@ export default function Orders() {
             <h1 className="text-lg md:text-2xl font-bold text-gray-900">Orders</h1>
             <p className="text-xs md:text-sm text-gray-500">Manage order flow and track status.</p>
           </div>
+          <button
+            onClick={() => setIsNewOrderOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-mocha-700 text-white rounded-xl text-sm font-semibold hover:bg-mocha-800 active:scale-95 transition-all shadow-sm"
+          >
+            <PlusCircle size={16} />
+            <span className="hidden sm:inline">New Order</span>
+            <span className="sm:hidden">New</span>
+          </button>
         </div>
         
         {/* Filters */}
@@ -157,6 +183,13 @@ export default function Orders() {
         order={selectedOrder} 
         onClose={() => setSelectedOrder(null)}
         onUpdateStatus={handleUpdateStatus}
+      />
+
+      <NewOrderModal
+        isOpen={isNewOrderOpen}
+        onClose={() => setIsNewOrderOpen(false)}
+        menuItems={menuItems}
+        onSubmit={handleCreateOrder}
       />
     </div>
   );

@@ -99,8 +99,8 @@ export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsPro
               {/* Items List */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-gray-900">Items</h3>
-                {order.items.map((item, idx) => (
-                  <div key={idx} className="flex items-center p-3 md:p-4 bg-gray-50 rounded-lg gap-3">
+                {order.items.map((item) => (
+                  <div key={item.id} className="flex items-center p-3 md:p-4 bg-gray-50 rounded-lg gap-3">
                     <span className="bg-white w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-md border border-gray-200 font-bold text-sm shrink-0">
                       {item.quantity}x
                     </span>

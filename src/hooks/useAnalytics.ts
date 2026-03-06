@@ -154,7 +154,8 @@ export interface AnalyticsResult {
   topItems: TopItem[];
 
   // ── Status breakdown (real only — it's a live metric) ───────────────────────
-  statusBreakdown: Array<{ status: OrderStatus; count: number }>;  allOrdersTotal: number;       // total ALL real orders (for % denominator in status section)
+  statusBreakdown: Array<{ status: OrderStatus; count: number }>;
+  allOrdersTotal: number;       // total ALL real orders (for % denominator in status section)
   // ── Activity / transaction feeds ────────────────────────────────────────────
   recentOrders: Order[];        // newest 5 all-time (Dashboard activity feed)
   recentTransactions: Order[];  // newest 5 completed in period (Reports page)
@@ -197,9 +198,10 @@ export function useAnalytics(period: AnalyticsPeriod): AnalyticsResult {
   const totalOrders    = bl.orders         + periodOrders.length;
   const completedTotal = bl.completedOrders + completedPeriod.length;
   const avgOrderValue  = completedTotal > 0 ? totalRevenue / completedTotal : 0;
-  const openOrders     = orders.filter(o =>
-    ['New', 'Preparing', 'Ready'].includes(o.status)
-  ).length;
+  const openOrders = useMemo(
+    () => orders.filter(o => ['New', 'Preparing', 'Ready'].includes(o.status)).length,
+    [orders],
+  );
 
   // ── Chart: baseline per bucket + real completed revenue per bucket ──────────
   const chartData = useMemo<ChartPoint[]>(() => {

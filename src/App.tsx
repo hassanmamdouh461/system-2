@@ -16,7 +16,12 @@ import Login from './pages/Login';
 function ProtectedRoute() {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  return <Outlet />;
+  // DataProvider lives here so Appwrite is only fetched after the user is authenticated
+  return (
+    <DataProvider>
+      <Outlet />
+    </DataProvider>
+  );
 }
 
 function AppRoutes() {
@@ -54,9 +59,7 @@ function App() {
   return (
     <AuthProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <DataProvider>
-          <AppRoutes />
-        </DataProvider>
+        <AppRoutes />
       </Router>
     </AuthProvider>
   );

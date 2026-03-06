@@ -25,7 +25,6 @@ export default function Payment() {
   };
 
   const handlePaymentComplete = async (orderId: string, method: 'Cash' | 'Card') => {
-    console.log(`Payment completed for ${orderId} via ${method}`);
     try {
       await completeWithPayment(orderId);
     } catch (error) {

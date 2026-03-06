@@ -70,12 +70,13 @@ export default function Dashboard() {
 
   const handleCreateOrder = async (tableId: string, items: OrderItem[]) => {
     const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const orderNumber = `ORD-${Date.now().toString().slice(-4)}`;
+    const orderNumber = `ORD-${Date.now().toString(36).toUpperCase().slice(-6)}`;
     await addOrder({
       orderNumber,
       tableId,
       items,
       status: 'New',
+      paymentStatus: 'Unpaid',
       totalAmount,
       createdAt: new Date().toISOString(),
     });

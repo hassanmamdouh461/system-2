@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Order } from '../../types/order';
 import { X, CheckCircle2, Receipt, Printer, CreditCard, Banknote } from 'lucide-react';
@@ -15,6 +15,24 @@ export function PaymentModal({ order, isOpen, onClose, onPaymentComplete }: Paym
   const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card'>('Cash');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  // Track whether onPaymentComplete has already been called for this session.
+  // Prevents double-firing if the user clicks Done twice or if any stale timer fires.
+  const paymentFiredRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Reset all state when the modal opens on a fresh order
+  useEffect(() => {
+    if (isOpen && order) {
+      setPaymentMethod('Cash');
+      setIsProcessing(false);
+      setShowReceipt(false);
+      paymentFiredRef.current = false;
+    }
+    // Cleanup: cancel any pending timer if the modal is closed externally (e.g. backdrop)
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [isOpen, order?.id]); // re-run only when a different order opens
 
   if (!isOpen || !order) return null;
 
@@ -24,17 +42,27 @@ export function PaymentModal({ order, isOpen, onClose, onPaymentComplete }: Paym
 
   const handleProcessPayment = () => {
     setIsProcessing(true);
-    // Simulate payment processing
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
+      // Fire the DB write immediately when payment "succeeds" — not on modal dismiss.
+      // Capture orderId/method in closure so stale state can never target the wrong order.
+      const orderId = order.id;
+      const method  = paymentMethod;
+      if (!paymentFiredRef.current) {
+        paymentFiredRef.current = true;
+        onPaymentComplete(orderId, method);
+      }
       setIsProcessing(false);
       setShowReceipt(true);
     }, 1500);
   };
 
   const handleClose = () => {
-    if (showReceipt) {
-      onPaymentComplete(order.id, paymentMethod);
+    // Cancel any in-flight timer to prevent the stale-receipt bug
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
+    setIsProcessing(false);
     setShowReceipt(false);
     onClose();
   };

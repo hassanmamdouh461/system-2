@@ -15,6 +15,7 @@ import { SidebarItem } from './SidebarItem';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   mobileOpen?: boolean;
@@ -23,6 +24,7 @@ interface SidebarProps {
 
 export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { user } = useAuth();
   const isMobile = useIsMobile();
 
   const handleItemClick = () => {
@@ -95,8 +97,8 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
           />
           {(!collapsed || isMobile) && (
             <div className="overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">Admin User</p>
-              <p className="text-xs text-gray-400 truncate">Manager</p>
+              <p className="text-sm font-medium text-white truncate">{user?.name ?? 'Admin User'}</p>
+              <p className="text-xs text-gray-400 truncate">{user?.role ?? 'Manager'}</p>
             </div>
           )}
         </div>

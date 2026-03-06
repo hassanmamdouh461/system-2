@@ -6,9 +6,11 @@ import { MOCK_ORDERS } from '../types/order';
 import { INITIAL_MENU_ITEMS } from '../types/menu';
 import { menuService } from '../services/menuService';
 import { ordersService } from '../services/ordersService';
+import { useAuth } from '../context/AuthContext';
 
 export default function Settings() {
   const [resetting, setResetting] = useState(false);
+  const { logout } = useAuth();
 
   const handleResetOrders = async () => {
     if (window.confirm('⚠️ This will reset all orders in Appwrite to default. Continue?')) {
@@ -191,6 +193,7 @@ export default function Settings() {
            initial={{ opacity: 0 }}
            animate={{ opacity: 1 }}
            transition={{ delay: 0.4 }}
+           onClick={logout}
            className="mobile-touch-target w-full bg-red-50 text-red-600 py-3 md:py-4 rounded-xl font-semibold hover:bg-red-100 flex items-center justify-center gap-2 transition-colors tap-highlight-none"
         >
            <LogOut size={20} /> Sign Out

@@ -19,12 +19,13 @@ export default function Orders() {
 
   const handleCreateOrder = async (tableId: string, items: OrderItem[]) => {
     const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const orderNumber = `ORD-${Date.now().toString().slice(-4)}`;
+    const orderNumber = `ORD-${Date.now().toString(36).toUpperCase().slice(-6)}`;
     await addOrder({
       orderNumber,
       tableId,
       items,
       status: 'New',
+      paymentStatus: 'Unpaid',
       totalAmount,
       createdAt: new Date().toISOString(),
     });
@@ -60,6 +61,7 @@ export default function Orders() {
     { title: 'New Orders', status: 'New', color: 'bg-mocha-100 text-mocha-800' },
     { title: 'Brewing ☕', status: 'Preparing', color: 'bg-caramel-light text-coffee-dark' },
     { title: 'Ready for Pickup 🛎️', status: 'Ready', color: 'bg-green-50 text-green-700' },
+    { title: 'Cancelled ✕', status: 'Cancelled', color: 'bg-red-50 text-red-600' },
   ];
 
   const filteredOrders = filterStatus === 'All' 
@@ -88,7 +90,7 @@ export default function Orders() {
         {/* Filters */}
         <div className="overflow-x-auto hide-scrollbar -mx-3 px-3 md:mx-0 md:px-0">
           <div className="bg-white border border-gray-200 rounded-lg p-1 flex gap-1 min-w-max md:min-w-0">
-            {(['All', 'New', 'Preparing', 'Ready', 'Completed'] as const).map(status => (
+            {(['All', 'New', 'Preparing', 'Ready', 'Completed', 'Cancelled'] as const).map(status => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}

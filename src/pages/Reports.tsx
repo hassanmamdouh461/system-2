@@ -121,10 +121,10 @@ export default function Reports() {
               onChange={e => setDateRange(e.target.value as AnalyticsPeriod)}
               className="w-full pl-8 md:pl-9 pr-3 md:pr-4 py-2 bg-white border border-gray-200 rounded-lg text-xs md:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-caramel"
             >
-              <option>Today</option>
-              <option>This Week</option>
-              <option>This Month</option>
-              <option>This Year</option>
+              <option value="Today">Today</option>
+              <option value="This Week">This Week</option>
+              <option value="This Month">This Month</option>
+              <option value="This Year">This Year</option>
             </select>
           </div>
           <button

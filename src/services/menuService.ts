@@ -1,6 +1,6 @@
 import { databases, directCreate, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
 import { MenuItem } from '../types/menu';
-import { ID, Query } from 'appwrite';
+import { ID } from 'appwrite';
 
 /**
  * Menu Service - Handle all CRUD operations for Menu Items using Appwrite

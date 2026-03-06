@@ -229,20 +229,22 @@ export function PaymentModal({ order, isOpen, onClose, onPaymentComplete }: Paym
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={handleClose}
-        />
+      {/* Backdrop — own fixed layer, covers the full viewport with no gaps */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 top-0 left-0 w-screen h-screen m-0 p-0 z-[100] bg-black/60 backdrop-blur-sm"
+        onClick={handleClose}
+      />
 
+      {/* Modal — own fixed layer, centred, above backdrop */}
+      <div className="fixed inset-0 top-0 left-0 w-screen h-screen m-0 p-4 z-[101] flex items-center justify-center pointer-events-none">
         <motion.div
            initial={{ opacity: 0, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}
            exit={{ opacity: 0, scale: 0.95 }}
-           className="bg-white rounded-2xl w-full max-w-lg shadow-2xl relative z-50 overflow-hidden flex flex-col max-h-[90dvh]"
+           className="bg-white rounded-2xl w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[90dvh] pointer-events-auto"
         >
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">

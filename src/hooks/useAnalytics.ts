@@ -243,11 +243,12 @@ export function useAnalytics(period: AnalyticsPeriod): AnalyticsResult {
         }),
       );
     } else {
-      // Seed from historical baseline, then layer real orders on top
+      // Seed from historical baseline, then layer ONLY paid orders on top.
+      // Financial rule: an item is "sold" when its order is Paid — never before.
       TOP_ITEMS_BOOST[period].forEach(b => {
         map[b.name] = { name: b.name, count: b.count, revenue: b.revenue };
       });
-      periodOrders.forEach(order =>
+      completedPeriod.forEach(order =>
         order.items.forEach(item => {
           if (!map[item.name]) map[item.name] = { name: item.name, count: 0, revenue: 0 };
           map[item.name].count   += item.quantity;
@@ -257,7 +258,7 @@ export function useAnalytics(period: AnalyticsPeriod): AnalyticsResult {
     }
 
     return Object.values(map).sort((a, b) => b.count - a.count).slice(0, 5);
-  }, [completedPeriod, periodOrders, period]);
+  }, [completedPeriod, period]);
 
   // ── Status breakdown: uses ALL real orders (live kitchen board view) ────────
   // Not period-filtered — represents the current operational state of the kitchen.

@@ -30,13 +30,8 @@ export default function Login() {
     setLoading(true);
     try {
       if (!username || !password) throw new Error('Please fill in all fields');
-      await login(username, password);
-      // ── Persist / clear based on checkbox ─────────────────────────────────
-      if (rememberMe) {
-        localStorage.setItem(LS_KEY, username);
-      } else {
-        localStorage.removeItem(LS_KEY);
-      }
+      // rememberMe is passed to AuthContext — localStorage handled there
+      await login(username, password, rememberMe);
       navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid credentials');

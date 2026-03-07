@@ -24,7 +24,7 @@ interface OrdersState {
   error: Error | null;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
-  completeWithPayment: (id: string) => Promise<void>;
+  completeWithPayment: (id: string, method?: 'Cash' | 'Card') => Promise<void>;
   updateOrder: (id: string, data: Partial<Omit<Order, 'id'>>) => Promise<void>;
   deleteOrder: (id: string) => Promise<void>;
   refetch: () => Promise<void>;
@@ -169,13 +169,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ordersList]);
 
-  const completeWithPayment = useCallback(async (id: string) => {
+  const completeWithPayment = useCallback(async (id: string, method: 'Cash' | 'Card' = 'Cash') => {
     const oldOrders = ordersList;
     setOrdersList(prev => prev.map(o =>
       o.id === id ? { ...o, status: 'Completed', paymentStatus: 'Paid' } : o
     ));
     try {
-      await ordersService.completeWithPayment(id);
+      await ordersService.completeWithPayment(id, method);
     } catch (err) {
       setOrdersList(oldOrders);
       throw err;

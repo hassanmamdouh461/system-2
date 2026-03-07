@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Order, OrderStatus, OrderItem } from '../types/order';
 import { OrderCard } from '../components/orders/OrderCard';
 import { OrderDetails } from '../components/orders/OrderDetails';
@@ -65,9 +65,23 @@ export default function Orders() {
     { title: 'Cancelled ✕', status: 'Cancelled', color: 'bg-red-50 text-red-600' },
   ];
 
-  const filteredOrders = filterStatus === 'All' 
-    ? orders 
-    : orders.filter(o => o.status === filterStatus);
+  // Single-pass grouping — O(n) instead of O(n × columns).
+  // All kanban columns and the mobile list read from this memo.
+  const groupedOrders = useMemo(() => {
+    const map: Record<string, Order[]> = {
+      New: [], Preparing: [], Ready: [], Completed: [], Cancelled: [],
+    };
+    for (const o of orders) {
+      if (map[o.status]) map[o.status].push(o);
+    }
+    // Completed sorted newest-first so the most recent payment is at the top
+    map.Completed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return map;
+  }, [orders]);
+
+  const filteredOrders = filterStatus === 'All'
+    ? orders
+    : (groupedOrders[filterStatus] ?? []);
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100dvh - 4rem)' }}>
@@ -104,7 +118,7 @@ export default function Orders() {
                 {status}
                 {status !== 'All' && (
                   <span className="ml-1 text-xs opacity-70">
-                    ({orders.filter(o => o.status === status).length})
+                    ({(groupedOrders[status] ?? []).length})
                   </span>
                 )}
               </button>
@@ -142,13 +156,12 @@ export default function Orders() {
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="font-bold text-gray-700 text-sm">{col.title}</h3>
                   <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-xs font-bold">
-                    {orders.filter(o => o.status === col.status).length}
+                    {(groupedOrders[col.status] ?? []).length}
                   </span>
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
                   <AnimatePresence mode="popLayout">
-                    {orders
-                      .filter(o => o.status === col.status)
+                    {(groupedOrders[col.status] ?? [])
                       .map(order => (
                         <OrderCard 
                           key={order.id} 
@@ -166,14 +179,12 @@ export default function Orders() {
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-bold text-gray-500 text-sm">Completed</h3>
                 <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-xs font-bold">
-                  {orders.filter(o => o.status === 'Completed').length}
+                  {groupedOrders.Completed.length}
                 </span>
               </div>
               <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
                 <AnimatePresence mode="popLayout">
-                  {orders
-                    .filter(o => o.status === 'Completed')
-                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                  {groupedOrders.Completed
                     .map(order => (
                       <OrderCard 
                         key={order.id} 

@@ -168,11 +168,12 @@ export const ordersService = {
    * This is the ONLY path that sets paymentStatus = 'Paid', ensuring revenue
    * is never counted for orders closed from the kitchen screen.
    */
-  async completeWithPayment(id: string): Promise<Order> {
+  async completeWithPayment(id: string, method: 'Cash' | 'Card' = 'Cash'): Promise<Order> {
     try {
       const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id, {
         status: 'Completed',
         paymentStatus: 'Paid',
+        paymentMethod: method,
       });
 
       let items = response.items;

@@ -26,7 +26,7 @@ export default function Payment() {
 
   const handlePaymentComplete = async (orderId: string, method: 'Cash' | 'Card') => {
     try {
-      await completeWithPayment(orderId);
+      await completeWithPayment(orderId, method);
     } catch (error) {
       console.error('Failed to complete payment:', error);
       alert('Failed to complete payment');

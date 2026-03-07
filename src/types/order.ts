@@ -21,117 +21,119 @@ export interface Order {
   createdAt: string; // ISO string
 }
 
+// ─── Demo layout: 3 New · 2 Preparing · 3 Ready · 0 Completed · 0 Cancelled ──
+// ALL paymentStatus = 'Unpaid'  →  Dashboard revenue starts at $0.00
+// This is the single source of truth used by both the Settings "Reset" button
+// and the seed-appwrite.ts script, so both paths produce the exact same board.
 export const MOCK_ORDERS: Order[] = [
-  // ═══════════════ 2 NEW ORDERS ═══════════════
+  // ═══════════════ NEW (3) ═══════════════
   {
-    id: 'mock-id-1008',
-    orderNumber: 'ORD-1008',
-    tableId: 'T-3',
+    id: 'mock-id-001',
+    orderNumber: 'ORD-001',
+    tableId: 'Table 3',
     status: 'New',
     paymentStatus: 'Unpaid',
     items: [
-      { id: '1', name: 'Espresso', quantity: 2, price: 3.50 },
-      { id: '3', name: 'Cappuccino', quantity: 1, price: 5.00 },
+      { id: 'item-1', name: 'Spanish Latte',    quantity: 2, price: 6.00 },
+      { id: 'item-2', name: 'Croissant',         quantity: 1, price: 4.50 },
+      { id: 'item-3', name: 'Orange Juice',      quantity: 1, price: 4.00 },
     ],
-    totalAmount: 12.00,
-    createdAt: new Date().toISOString(),
+    totalAmount: 18.50,
+    createdAt: new Date(Date.now() - 1000 * 60 * 3).toISOString(),
   },
   {
-    id: 'mock-id-1007',
-    orderNumber: 'ORD-1007',
-    tableId: 'T-5',
+    id: 'mock-id-002',
+    orderNumber: 'ORD-002',
+    tableId: 'Table 7',
     status: 'New',
     paymentStatus: 'Unpaid',
     items: [
-      { id: '2', name: 'Spanish Latte', quantity: 1, price: 6.00 },
-      { id: '6', name: 'Mocha Frappe', quantity: 1, price: 7.00 },
+      { id: 'item-4', name: 'Cappuccino',        quantity: 2, price: 5.00 },
+      { id: 'item-5', name: 'Avocado Toast',     quantity: 1, price: 9.00 },
     ],
-    totalAmount: 13.00,
-    createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
+    totalAmount: 14.00,
+    createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+  },
+  {
+    id: 'mock-id-003',
+    orderNumber: 'ORD-003',
+    tableId: 'Table 1',
+    status: 'New',
+    paymentStatus: 'Unpaid',
+    items: [
+      { id: 'item-6', name: 'Espresso Shot',     quantity: 2, price: 3.50 },
+      { id: 'item-7', name: 'Blueberry Muffin',  quantity: 1, price: 4.50 },
+    ],
+    totalAmount: 11.50,
+    createdAt: new Date(Date.now() - 1000 * 60 * 7).toISOString(),
   },
 
-  // ═══════════════ 2 BREWING (Preparing) ═══════════════
+  // ═══════════════ PREPARING (2) ═══════════════
   {
-    id: 'mock-id-1006',
-    orderNumber: 'ORD-1006',
-    tableId: 'T-7',
+    id: 'mock-id-004',
+    orderNumber: 'ORD-004',
+    tableId: 'Table 5',
     status: 'Preparing',
     paymentStatus: 'Unpaid',
     items: [
-      { id: '6', name: 'Mocha Frappe', quantity: 2, price: 7.00 },
-      { id: '4', name: 'Iced Latte', quantity: 1, price: 5.50 },
+      { id: 'item-8',  name: 'Iced Caramel Macchiato', quantity: 2, price: 6.50 },
+      { id: 'item-9',  name: 'Club Sandwich',           quantity: 1, price: 9.00 },
     ],
-    totalAmount: 19.50,
-    createdAt: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
+    totalAmount: 22.00,
+    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
   },
   {
-    id: 'mock-id-1005',
-    orderNumber: 'ORD-1005',
-    tableId: 'T-2',
+    id: 'mock-id-005',
+    orderNumber: 'ORD-005',
+    tableId: 'Table 2',
     status: 'Preparing',
     paymentStatus: 'Unpaid',
     items: [
-      { id: '3', name: 'Cappuccino', quantity: 2, price: 5.00 },
-      { id: '8', name: 'Strawberry Milkshake', quantity: 1, price: 6.00 },
-    ],
-    totalAmount: 16.00,
-    createdAt: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
-  },
-
-  // ═══════════════ 2 READY FOR PICKUP ═══════════════
-  {
-    id: 'mock-id-1004',
-    orderNumber: 'ORD-1004',
-    tableId: 'T-1',
-    status: 'Ready',
-    paymentStatus: 'Unpaid',
-    items: [
-      { id: '1', name: 'Espresso', quantity: 3, price: 3.50 },
-      { id: '7', name: 'Oreo Milkshake', quantity: 2, price: 6.50 },
-    ],
-    totalAmount: 23.50,
-    createdAt: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
-  },
-  {
-    id: 'mock-id-1003',
-    orderNumber: 'ORD-1003',
-    tableId: 'T-4',
-    status: 'Ready',
-    paymentStatus: 'Unpaid',
-    items: [
-      { id: '5', name: 'Iced Caramel Macchiato', quantity: 2, price: 6.50 },
-      { id: '7', name: 'Oreo Milkshake', quantity: 1, price: 6.50 },
+      { id: 'item-10', name: 'Mocha Frappe',     quantity: 1, price: 6.50 },
+      { id: 'item-11', name: 'Eggs Benedict',    quantity: 1, price: 13.00 },
     ],
     totalAmount: 19.50,
+    createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
+  },
+
+  // ═══════════════ READY (3) ═══════════════
+  {
+    id: 'mock-id-006',
+    orderNumber: 'ORD-006',
+    tableId: 'Table 9',
+    status: 'Ready',
+    paymentStatus: 'Unpaid',
+    items: [
+      { id: 'item-12', name: 'Flat White',       quantity: 3, price: 5.00 },
+    ],
+    totalAmount: 15.00,
     createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
   },
-
-  // ═══════════════ 2 COMPLETED (Paid via Payment screen) ═══════════════
   {
-    id: 'mock-id-1002',
-    orderNumber: 'ORD-1002',
-    tableId: 'T-6',
-    status: 'Completed',
-    paymentStatus: 'Paid',
+    id: 'mock-id-007',
+    orderNumber: 'ORD-007',
+    tableId: 'Table 4',
+    status: 'Ready',
+    paymentStatus: 'Unpaid',
     items: [
-      { id: '2', name: 'Spanish Latte', quantity: 1, price: 6.00 },
-      { id: '3', name: 'Cappuccino', quantity: 1, price: 5.00 },
-      { id: '8', name: 'Strawberry Milkshake', quantity: 1, price: 6.00 },
+      { id: 'item-13', name: 'Spanish Latte',    quantity: 2, price: 6.00 },
+      { id: 'item-14', name: 'Grilled Panini',   quantity: 1, price: 11.50 },
+      { id: 'item-15', name: 'Espresso Shot',    quantity: 1, price: 4.00 },
     ],
-    totalAmount: 17.00,
-    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+    totalAmount: 27.50,
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
   },
   {
-    id: 'mock-id-1001',
-    orderNumber: 'ORD-1001',
-    tableId: 'T-8',
-    status: 'Completed',
-    paymentStatus: 'Paid',
+    id: 'mock-id-008',
+    orderNumber: 'ORD-008',
+    tableId: 'Table 6',
+    status: 'Ready',
+    paymentStatus: 'Unpaid',
     items: [
-      { id: '4', name: 'Iced Latte', quantity: 2, price: 5.50 },
-      { id: '6', name: 'Mocha Frappe', quantity: 1, price: 7.00 },
+      { id: 'item-16', name: 'Americano',        quantity: 2, price: 4.00 },
+      { id: 'item-17', name: 'Banana Bread',     quantity: 1, price: 4.00 },
     ],
-    totalAmount: 18.00,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+    totalAmount: 12.00,
+    createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
   },
 ];

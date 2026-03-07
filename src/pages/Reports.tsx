@@ -40,7 +40,7 @@ function periodLabel(p: AnalyticsPeriod) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function Reports() {
-  const [dateRange, setDateRange] = useState<AnalyticsPeriod>('This Week');
+  const [dateRange, setDateRange] = useState<AnalyticsPeriod>('Today');
 
   // Single hook call — all computation happens inside useAnalytics.
   // When dateRange = 'Today', every stat equals Dashboard's values exactly.

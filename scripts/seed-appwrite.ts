@@ -205,22 +205,21 @@ async function main() {
         if (e.code === 409) console.log('ℹ️  Orders Collection already exists');
     }
 
-    // 4. Seed Menu items (skip if already present)
+    // 4. Clear menu then re-seed (prevents duplicates on repeated runs)
+    console.log('\n🧹 Clearing existing menu items...');
+    await clearCollection(menuCollId);
+
     console.log('\n🌱 Seeding menu items...');
     for (const item of INITIAL_MENU_ITEMS) {
-        try {
-            await db.createDocument(CONFIG.DB_ID, menuCollId, ID.unique(), {
-                name: item.name,
-                price: item.price,
-                category: item.category,
-                description: item.description,
-                image: item.image,
-                available: item.available,
-            });
-            console.log(`   + ${item.name}`);
-        } catch (e: any) {
-            console.log(`   ~ Skipped (exists): ${item.name}`);
-        }
+        await db.createDocument(CONFIG.DB_ID, menuCollId, ID.unique(), {
+            name: item.name,
+            price: item.price,
+            category: item.category,
+            description: item.description,
+            image: item.image,
+            available: item.available,
+        });
+        console.log(`   + ${item.name}`);
     }
 
     // 5. Clear ALL existing orders then insert the fixed demo set

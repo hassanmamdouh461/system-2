@@ -51,12 +51,14 @@ const statusIcons: Record<OrderStatus, React.ElementType> = {
   Cancelled: XCircle,
 };
 
-export function OrderCard({ order, onClick, selected }: OrderCardProps) {
+export const OrderCard = React.forwardRef<HTMLDivElement, OrderCardProps>(
+  function OrderCard({ order, onClick, selected }, ref) {
   const StatusIcon = statusIcons[order.status];
   const colors = statusColors[order.status];
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 16, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -134,3 +136,4 @@ export function OrderCard({ order, onClick, selected }: OrderCardProps) {
     </motion.div>
   );
 }
+);

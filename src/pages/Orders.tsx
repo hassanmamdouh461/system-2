@@ -7,6 +7,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { useOrders } from '../hooks/useOrders';
 import { useMenu } from '../hooks/useMenu';
 import { PlusCircle } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 
 export default function Orders() {
   // Use Appwrite for real-time data persistence
@@ -121,13 +122,15 @@ export default function Orders() {
               <p className="text-sm">No orders found</p>
             </div>
           ) : (
-            filteredOrders.map(order => (
-              <OrderCard 
-                key={order.id} 
-                order={order} 
-                onClick={setSelectedOrder}
-              />
-            ))
+            <AnimatePresence mode="popLayout">
+              {filteredOrders.map(order => (
+                <OrderCard 
+                  key={order.id} 
+                  order={order} 
+                  onClick={setSelectedOrder}
+                />
+              ))}
+            </AnimatePresence>
           )}
         </div>
       ) : (
@@ -143,15 +146,17 @@ export default function Orders() {
                   </span>
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
-                  {orders
-                    .filter(o => o.status === col.status)
-                    .map(order => (
-                      <OrderCard 
-                        key={order.id} 
-                        order={order} 
-                        onClick={setSelectedOrder}
-                      />
-                    ))}
+                  <AnimatePresence mode="popLayout">
+                    {orders
+                      .filter(o => o.status === col.status)
+                      .map(order => (
+                        <OrderCard 
+                          key={order.id} 
+                          order={order} 
+                          onClick={setSelectedOrder}
+                        />
+                      ))}
+                  </AnimatePresence>
                 </div>
               </div>
             ))}
@@ -165,16 +170,18 @@ export default function Orders() {
                 </span>
               </div>
               <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
-                {orders
-                  .filter(o => o.status === 'Completed')
-                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                  .map(order => (
-                    <OrderCard 
-                      key={order.id} 
-                      order={order} 
-                      onClick={setSelectedOrder}
-                    />
-                  ))}
+                <AnimatePresence mode="popLayout">
+                  {orders
+                    .filter(o => o.status === 'Completed')
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .map(order => (
+                      <OrderCard 
+                        key={order.id} 
+                        order={order} 
+                        onClick={setSelectedOrder}
+                      />
+                    ))}
+                </AnimatePresence>
               </div>
             </div>
           </div>

@@ -164,14 +164,15 @@ export const ordersService = {
   },
 
   /**
-   * Mark an order as Completed AND Paid — called exclusively from Payment.tsx.
-   * This is the ONLY path that sets paymentStatus = 'Paid', ensuring revenue
-   * is never counted for orders closed from the kitchen screen.
+   * Mark an order as Paid — called exclusively from Payment.tsx.
+   * Only writes paymentStatus + paymentMethod. Kitchen status is NEVER touched
+   * here — separation of concerns: the cashier's action must not override the
+   * kitchen workflow (an order can be paid while still 'New' or 'Preparing').
+   * Revenue is recognised the moment paymentStatus becomes 'Paid'.
    */
   async completeWithPayment(id: string, method: 'Cash' | 'Card' = 'Cash'): Promise<Order> {
     try {
       const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id, {
-        status: 'Completed',
         paymentStatus: 'Paid',
         paymentMethod: method,
       });

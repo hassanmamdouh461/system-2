@@ -171,8 +171,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const completeWithPayment = useCallback(async (id: string, method: 'Cash' | 'Card' = 'Cash') => {
     const oldOrders = ordersList;
+    // Optimistic update: only flip paymentStatus — kitchen status is unchanged.
+    // An order paid while still 'New' or 'Preparing' stays in its Kanban column.
     setOrdersList(prev => prev.map(o =>
-      o.id === id ? { ...o, status: 'Completed', paymentStatus: 'Paid' } : o
+      o.id === id ? { ...o, paymentStatus: 'Paid' } : o
     ));
     try {
       await ordersService.completeWithPayment(id, method);

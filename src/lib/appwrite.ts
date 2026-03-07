@@ -1,4 +1,4 @@
-import { Client, Databases, RealtimeResponseEvent } from 'appwrite';
+import { Client, Databases } from 'appwrite';
 
 export const APPWRITE_CONFIG = {
     ENDPOINT: 'https://fra.cloud.appwrite.io/v1',

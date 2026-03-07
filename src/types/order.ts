@@ -1,6 +1,5 @@
 export type OrderStatus = 'New' | 'Preparing' | 'Ready' | 'Completed' | 'Cancelled';
 export type PaymentStatus = 'Unpaid' | 'Paid';
-export type SortingOption = 'Newest' | 'Oldest';
 
 export interface OrderItem {
   id: string;

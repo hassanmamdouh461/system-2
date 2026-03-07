@@ -11,7 +11,7 @@ import { AnimatePresence } from 'framer-motion';
 
 export default function Orders() {
   // Use Appwrite for real-time data persistence
-  const { orders, loading, error, updateOrderStatus, addOrder } = useOrders();
+  const { orders, error, updateOrderStatus, addOrder } = useOrders();
   const { items: menuItems } = useMenu();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'All'>('All');
@@ -40,8 +40,8 @@ export default function Orders() {
       if (selectedOrder && selectedOrder.id === orderId) {
         setSelectedOrder({ ...selectedOrder, status: newStatus });
       }
-    } catch (error) {
-      console.error('Failed to update order status:', error);
+    } catch (err) {
+      console.error('Failed to update order status:', err);
       alert('Failed to update order status');
     }
   };

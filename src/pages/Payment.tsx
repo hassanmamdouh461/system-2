@@ -4,11 +4,10 @@ import { PaymentModal } from '../components/payment/PaymentModal';
 import { CreditCard, DollarSign, Search, Calculator } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useOrders } from '../hooks/useOrders';
-import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 export default function Payment() {
   // Use Appwrite - sync with Orders page
-  const { orders: allOrders, loading, error, completeWithPayment } = useOrders();
+  const { orders: allOrders, error, completeWithPayment } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,8 +26,8 @@ export default function Payment() {
   const handlePaymentComplete = async (orderId: string, method: 'Cash' | 'Card') => {
     try {
       await completeWithPayment(orderId, method);
-    } catch (error) {
-      console.error('Failed to complete payment:', error);
+    } catch (err) {
+      console.error('Failed to complete payment:', err);
       alert('Failed to complete payment');
     }
   };

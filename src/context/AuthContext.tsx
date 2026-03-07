@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-const LS_KEY = 'brewmaster_remembered_username';
+const LS_USERNAME_KEY = 'brewmaster_remembered_username';
+const LS_SESSION_KEY  = 'auth_session';
 
 interface User {
   id: string;
@@ -18,7 +19,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  // ── Synchronous init: restore session from storage on page load/refresh ──
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const saved =
+        localStorage.getItem(LS_SESSION_KEY) ||
+        sessionStorage.getItem(LS_SESSION_KEY);
+      return saved ? (JSON.parse(saved) as User) : null;
+    } catch {
+      return null;
+    }
+  });
 
   // ── Registered accounts ────────────────────────────────────────────────
   const ACCOUNTS: Array<{ username: string; password: string; name: string; role: 'admin' | 'staff' }> = [
@@ -31,16 +42,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       a => a.username.toLowerCase() === username.trim().toLowerCase() && a.password === password
     );
     if (!match) throw new Error('Invalid username or password');
-    // ── Persist / clear username based on rememberMe ───────────────────────
+
+    const userData: User = { id: '1', name: match.name, role: match.role };
+
     if (rememberMe) {
-      localStorage.setItem(LS_KEY, username.trim());
+      // Persist across browser restarts
+      localStorage.setItem(LS_SESSION_KEY, JSON.stringify(userData));
+      localStorage.setItem(LS_USERNAME_KEY, username.trim());
+      sessionStorage.removeItem(LS_SESSION_KEY);
     } else {
-      localStorage.removeItem(LS_KEY);
+      // Persist only for the current tab/session
+      sessionStorage.setItem(LS_SESSION_KEY, JSON.stringify(userData));
+      localStorage.removeItem(LS_SESSION_KEY);
+      localStorage.removeItem(LS_USERNAME_KEY);
     }
-    setUser({ id: '1', name: match.name, role: match.role });
+
+    setUser(userData);
   };
 
   const logout = () => {
+    localStorage.removeItem(LS_SESSION_KEY);
+    localStorage.removeItem(LS_USERNAME_KEY);
+    sessionStorage.removeItem(LS_SESSION_KEY);
     setUser(null);
   };
 

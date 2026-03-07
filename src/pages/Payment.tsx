@@ -33,10 +33,20 @@ export default function Payment() {
     }
   };
 
-  const filteredOrders = orders.filter(o => 
-    o.tableId.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Ready first → Preparing → New (cashier sees most urgent orders at the top).
+  // Tie-break: oldest createdAt first (longest-waiting customer gets priority).
+  const STATUS_PRIORITY: Record<string, number> = { Ready: 1, Preparing: 2, New: 3, Completed: 4, Cancelled: 5 };
+
+  const filteredOrders = orders
+    .filter(o =>
+      o.tableId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const pd = (STATUS_PRIORITY[a.status] ?? 9) - (STATUS_PRIORITY[b.status] ?? 9);
+      if (pd !== 0) return pd;
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
 
   // Show error state
   if (error) {

@@ -2,7 +2,13 @@
  * useAnalytics — Unified Analytics Hook
  *
  * Single source of truth for all analytical data used by Dashboard and Reports.
- * Formula: displayed value = historical baseline + real completed orders for the period.
+ *
+ * Dual-mode formula:
+ *   • 'Today'               → 100 % real data only. Revenue, orders, and top items
+ *                             are derived exclusively from live Appwrite records.
+ *                             Dashboard starts at $0.00 / 0 orders each morning.
+ *   • 'This Week/Month/Year'→ historical baseline  +  real completed orders.
+ *                             Keeps realistic aggregate numbers for portfolio demos.
  *
  * When Reports is on "Today", every number matches Dashboard exactly.
  */
@@ -23,7 +29,7 @@ const BASELINE: Record<AnalyticsPeriod, {
   completedOrders: number;
   revenue: number;        // revenue from completed orders
 }> = {
-  'Today':      { orders: 15,   completedOrders: 12,   revenue: 120   },
+  'Today':      { orders: 0,    completedOrders: 0,    revenue: 0     },  // 🎬 demo baseline: starts clean
   'This Week':  { orders: 120,  completedOrders: 98,   revenue: 950   },
   'This Month': { orders: 520,  completedOrders: 425,  revenue: 4200  },
   'This Year':  { orders: 6500, completedOrders: 5300, revenue: 52000 },
@@ -39,7 +45,7 @@ const CHART_CONFIG: Record<AnalyticsPeriod, {
 }> = {
   'Today': {
     labels: ['9am', '10am', '11am', '12pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm'],
-    base:   [4,      6,      14,     22,     18,    10,    6,     8,     10,    10,    8,     4],   // sum=120
+    base:   [0,      0,      0,      0,      0,     0,     0,     0,     0,     0,     0,     0],   // 🎬 demo baseline: all zeros
     getBucket: (d) => d.getHours() - 9,
   },
   'This Week': {
@@ -63,13 +69,7 @@ const CHART_CONFIG: Record<AnalyticsPeriod, {
 // These are ADDED on top of real order counts so totals are always proportional
 // to the overall order/revenue baseline for that period.
 const TOP_ITEMS_BOOST: Record<AnalyticsPeriod, TopItem[]> = {
-  'Today': [
-    { name: 'Spanish Latte',          count: 8,    revenue: 48.00   },
-    { name: 'Iced Caramel Macchiato', count: 6,    revenue: 39.00   },
-    { name: 'Cappuccino',             count: 5,    revenue: 25.00   },
-    { name: 'Mocha Frappe',           count: 4,    revenue: 28.00   },
-    { name: 'Espresso Shot',          count: 3,    revenue: 12.00   },
-  ],
+  'Today': [],  // 🎬 demo baseline: no pre-seeded items — only real orders appear
   'This Week': [
     { name: 'Spanish Latte',          count: 52,   revenue: 312.00  },
     { name: 'Iced Caramel Macchiato', count: 43,   revenue: 279.50  },
@@ -225,25 +225,39 @@ export function useAnalytics(period: AnalyticsPeriod): AnalyticsResult {
     }));
   }, [completedPeriod, period]);
 
-  // ── Top items: real orders + period baseline (always proportional) ─────────
-  // Formula: displayed count = real order quantity + TOP_ITEMS_BOOST[period].count
-  // This ensures 'This Year' shows thousands of sales, not just 5, even with few real orders.
+  // ── Top items ──────────────────────────────────────────────────────────────
+  // 'Today'  → pure real data: aggregate items ONLY from today's paid orders.
+  //            An item appears here only if it was actually sold and paid for today.
+  // Others   → baseline boost + real period orders merged on top so that
+  //            'This Year' always shows thousands of sales, not just a handful.
   const topItems = useMemo<TopItem[]>(() => {
-    // Start with a map seeded from the period boost (baseline)
     const map: Record<string, TopItem> = {};
-    TOP_ITEMS_BOOST[period].forEach(b => {
-      map[b.name] = { name: b.name, count: b.count, revenue: b.revenue };
-    });
-    // Merge real period orders on top
-    periodOrders.forEach(order =>
-      order.items.forEach(item => {
-        if (!map[item.name]) map[item.name] = { name: item.name, count: 0, revenue: 0 };
-        map[item.name].count   += item.quantity;
-        map[item.name].revenue += item.quantity * item.price;
-      }),
-    );
+
+    if (period === 'Today') {
+      // Only paid orders contribute — zero dummy data
+      completedPeriod.forEach(order =>
+        order.items.forEach(item => {
+          if (!map[item.name]) map[item.name] = { name: item.name, count: 0, revenue: 0 };
+          map[item.name].count   += item.quantity;
+          map[item.name].revenue += item.quantity * item.price;
+        }),
+      );
+    } else {
+      // Seed from historical baseline, then layer real orders on top
+      TOP_ITEMS_BOOST[period].forEach(b => {
+        map[b.name] = { name: b.name, count: b.count, revenue: b.revenue };
+      });
+      periodOrders.forEach(order =>
+        order.items.forEach(item => {
+          if (!map[item.name]) map[item.name] = { name: item.name, count: 0, revenue: 0 };
+          map[item.name].count   += item.quantity;
+          map[item.name].revenue += item.quantity * item.price;
+        }),
+      );
+    }
+
     return Object.values(map).sort((a, b) => b.count - a.count).slice(0, 5);
-  }, [periodOrders, period]);
+  }, [completedPeriod, periodOrders, period]);
 
   // ── Status breakdown: uses ALL real orders (live kitchen board view) ────────
   // Not period-filtered — represents the current operational state of the kitchen.

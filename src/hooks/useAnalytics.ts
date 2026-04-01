@@ -94,7 +94,7 @@ const TOP_ITEMS_BOOST: Record<AnalyticsPeriod, TopItem[]> = {
 };
 
 // ─── Period filter ────────────────────────────────────────────────────────────
-function inPeriod(dateStr: string, period: AnalyticsPeriod): boolean {
+export function inPeriod(dateStr: string, period: AnalyticsPeriod): boolean {
   const d   = new Date(dateStr);
   const now = new Date();
   switch (period) {

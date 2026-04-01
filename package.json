@@ -8,6 +8,9 @@
     "build": "vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "reset-db": "tsx scripts/reset-appwrite.ts",
     "seed-db": "tsx scripts/seed-appwrite.ts"
   },
@@ -23,16 +26,22 @@
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^25.2.0",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^4.1.2",
     "autoprefixer": "^10.4.17",
+    "jsdom": "^29.0.1",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.2.2",
-    "vite": "^5.1.4"
+    "vite": "^5.1.4",
+    "vitest": "^4.1.2"
   }
 }

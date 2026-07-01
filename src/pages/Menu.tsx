@@ -1,0 +1,170 @@
+import React, { useState } from 'react';
+import { Plus, Search } from 'lucide-react';
+import { MenuItem, CATEGORIES } from '../types/menu';
+import { MenuItemCard } from '../components/menu/MenuItemCard';
+import { MenuModal } from '../components/menu/MenuModal';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useMenu } from '../hooks/useMenu';
+
+export default function Menu() {
+  // Use Appwrite for real-time data persistence
+  const { items, loading, error, addItem, updateItem, deleteItem, toggleAvailability } = useMenu();
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+
+  const filteredItems = items.filter(item => {
+    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const handleToggleStatus = async (id: string) => {
+    try {
+      await toggleAvailability(id);
+    } catch (error) {
+      console.error('Failed to toggle status:', error);
+      alert('Failed to update item availability');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      try {
+        await deleteItem(id);
+      } catch (error) {
+        console.error('Failed to delete item:', error);
+        alert('Failed to delete item');
+      }
+    }
+  };
+
+  const handleEdit = (item: MenuItem) => {
+    setEditingItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleAddNew = () => {
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async (itemData: MenuItem | Omit<MenuItem, 'id'>) => {
+    try {
+      if ('id' in itemData) {
+        // Edit existing
+        const { id, ...data } = itemData;
+        await updateItem(id, data);
+      } else {
+        // Add new
+        await addItem(itemData);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Failed to save item:', error);
+      alert('Failed to save item');
+    }
+  };
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <p className="text-red-600 font-semibold mb-2">Failed to load menu</p>
+          <p className="text-gray-500 text-sm">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 md:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h1 className="text-lg md:text-2xl font-bold text-gray-900">Menu Management</h1>
+          <p className="text-xs md:text-sm text-gray-500">Manage your coffee beverages and availability.</p>
+        </div>
+        <button 
+          onClick={handleAddNew}
+          className="bg-mocha-700 hover:bg-mocha-800 text-white px-4 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-mocha-500/20 transition-all active:scale-95 w-full sm:w-auto text-sm"
+        >
+          <Plus size={16} />
+          Add New Item
+        </button>
+      </div>
+
+      {/* Filters & Search */}
+      <div className="bg-white p-2 md:p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2 sticky top-0 z-10 backdrop-blur-xl bg-white/95">
+        {/* Categories - Horizontal scroll on mobile */}
+        <div className="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-0.5">
+          {CATEGORIES.map(category => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                selectedCategory === category
+                  ? 'bg-mocha-700 text-white'
+                  : 'bg-mocha-100 text-mocha-800 hover:bg-mocha-200'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Search items..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent text-sm"
+          />
+        </div>
+      </div>
+
+      {/* Menu Grid — 2 cols on mobile, 3 on tablet, 4 on desktop */}
+      <motion.div 
+        layout
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6"
+      >
+        <AnimatePresence>
+          {filteredItems.map(item => (
+            <MenuItemCard
+              key={item.id}
+              item={item}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onToggleStatus={handleToggleStatus}
+            />
+          ))}
+        </AnimatePresence>
+      </motion.div>
+
+      {filteredItems.length === 0 && (
+        <div className="text-center py-10 text-gray-500">
+          <div className="bg-gray-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Search className="w-7 h-7 text-gray-400" />
+          </div>
+          <p className="text-sm font-medium">No items found</p>
+          <p className="text-xs text-gray-400">Try adjusting your search or filters.</p>
+        </div>
+      )}
+
+      {/* Modal */}
+      <MenuModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
+        initialData={editingItem}
+      />
+    </div>
+  );
+}

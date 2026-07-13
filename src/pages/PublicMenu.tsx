@@ -198,23 +198,6 @@ export default function PublicMenu() {
                   !item.available ? 'opacity-60 saturate-50' : 'hover:shadow-md'
                 }`}
               >
-                {/* Image */}
-                {item.image && (
-                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-mocha-50 flex-shrink-0 relative border border-mocha-100/30">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
-                    {!item.available && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
-                          {t.outOfStock}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 {/* Details */}
                 <div className="flex-1 flex flex-col justify-between min-w-0">

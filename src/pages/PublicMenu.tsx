@@ -41,10 +41,8 @@ const TRANSLATIONS = {
 
 const CATEGORY_TRANSLATIONS: Record<string, { en: string; ar: string }> = {
   'All': { en: 'All', ar: 'الكل' },
-  'Hot Coffee': { en: 'Hot Coffee', ar: 'قهوة ساخنة' },
-  'Iced Coffee': { en: 'Iced Coffee', ar: 'قهوة باردة' },
-  'Frappe': { en: 'Frappe', ar: 'فرابيه' },
-  'Milkshakes': { en: 'Milkshakes', ar: 'ميلك شيك' }
+  'Bar': { en: 'Bar / Drinks', ar: 'المشروبات' },
+  'Kitchen': { en: 'Kitchen / Food', ar: 'المأكولات' }
 };
 
 export default function PublicMenu() {
@@ -82,7 +80,7 @@ export default function PublicMenu() {
     return matchesCategory && matchesSearch;
   });
 
-  const categories = ['All', 'Hot Coffee', 'Iced Coffee', 'Frappe', 'Milkshakes'];
+  const categories = ['All', 'Bar', 'Kitchen'];
 
   if (loading) {
     return (

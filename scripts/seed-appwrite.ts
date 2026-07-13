@@ -205,6 +205,28 @@ async function main() {
         if (e.code === 409) console.log('ℹ️  Orders Collection already exists');
     }
 
+    // 3.5. Create Customers Collection (idempotent)
+    const customersCollId = 'customers';
+    try {
+        await db.createCollection(CONFIG.DB_ID, customersCollId, 'Customers', [
+            Permission.read(Role.any()),
+            Permission.write(Role.any()),
+        ]);
+        console.log('✅ Customers Collection created');
+
+        await db.createStringAttribute(CONFIG.DB_ID, customersCollId, 'name', 255, true);
+        await db.createStringAttribute(CONFIG.DB_ID, customersCollId, 'phone', 50, true);
+        await db.createFloatAttribute(CONFIG.DB_ID, customersCollId, 'points', false, 0);
+        await db.createStringAttribute(CONFIG.DB_ID, customersCollId, 'createdAt', 100, true);
+        await db.createStringAttribute(CONFIG.DB_ID, customersCollId, 'branchId', 50, false);
+
+        console.log('⏳ Waiting for attributes to index...');
+        await wait(2000);
+    } catch (e: any) {
+        if (e.code === 409) console.log('ℹ️  Customers Collection already exists');
+        else console.error('Error creating customers collection:', e);
+    }
+
     // 4. Clear menu then re-seed (prevents duplicates on repeated runs)
     console.log('\n🧹 Clearing existing menu items...');
     await clearCollection(menuCollId);

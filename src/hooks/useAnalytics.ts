@@ -30,9 +30,9 @@ const BASELINE: Record<AnalyticsPeriod, {
   revenue: number;        // revenue from completed orders
 }> = {
   'Today':      { orders: 0,    completedOrders: 0,    revenue: 0     },  // 🎬 demo baseline: starts clean
-  'This Week':  { orders: 120,  completedOrders: 98,   revenue: 950   },
-  'This Month': { orders: 520,  completedOrders: 425,  revenue: 4200  },
-  'This Year':  { orders: 6500, completedOrders: 5300, revenue: 52000 },
+  'This Week':  { orders: 0,    completedOrders: 0,    revenue: 0     },
+  'This Month': { orders: 0,    completedOrders: 0,    revenue: 0     },
+  'This Year':  { orders: 0,    completedOrders: 0,    revenue: 0     },
 };
 
 // ─── Chart Baseline ───────────────────────────────────────────────────────────
@@ -50,17 +50,17 @@ const CHART_CONFIG: Record<AnalyticsPeriod, {
   },
   'This Week': {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    base:   [100,   130,   105,   145,   165,   185,   120],                                       // sum=950
+    base:   [0,   0,   0,   0,   0,   0,   0],
     getBucket: (d) => (d.getDay() + 6) % 7,
   },
   'This Month': {
     labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'],
-    base:   [950,    1050,   1100,   1100],                                                        // sum=4200
+    base:   [0,    0,   0,   0],
     getBucket: (d) => Math.min(Math.floor((d.getDate() - 1) / 7), 3),
   },
   'This Year': {
     labels: ['Jan',  'Feb',  'Mar',  'Apr',  'May',  'Jun',  'Jul',  'Aug',  'Sep',  'Oct',  'Nov',  'Dec'],
-    base:   [2600,   2900,   3600,   3900,   4100,   4700,   4400,   5200,   3900,   4600,   5300,   6300], // sum≈52500
+    base:   [0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
     getBucket: (d) => d.getMonth(),
   },
 };
@@ -70,27 +70,9 @@ const CHART_CONFIG: Record<AnalyticsPeriod, {
 // to the overall order/revenue baseline for that period.
 const TOP_ITEMS_BOOST: Record<AnalyticsPeriod, TopItem[]> = {
   'Today': [],  // 🎬 demo baseline: no pre-seeded items — only real orders appear
-  'This Week': [
-    { name: 'Spanish Latte',          count: 52,   revenue: 312.00  },
-    { name: 'Iced Caramel Macchiato', count: 43,   revenue: 279.50  },
-    { name: 'Cappuccino',             count: 38,   revenue: 190.00  },
-    { name: 'Mocha Frappe',           count: 31,   revenue: 217.00  },
-    { name: 'Espresso Shot',          count: 24,   revenue: 96.00   },
-  ],
-  'This Month': [
-    { name: 'Spanish Latte',          count: 218,  revenue: 1308.00 },
-    { name: 'Iced Caramel Macchiato', count: 172,  revenue: 1118.00 },
-    { name: 'Cappuccino',             count: 145,  revenue: 725.00  },
-    { name: 'Mocha Frappe',           count: 128,  revenue: 896.00  },
-    { name: 'Espresso Shot',          count: 98,   revenue: 392.00  },
-  ],
-  'This Year': [
-    { name: 'Spanish Latte',          count: 2450, revenue: 14700.00 },
-    { name: 'Iced Caramel Macchiato', count: 1980, revenue: 12870.00 },
-    { name: 'Cappuccino',             count: 1720, revenue: 8600.00  },
-    { name: 'Mocha Frappe',           count: 1540, revenue: 10780.00 },
-    { name: 'Espresso Shot',          count: 1180, revenue: 4720.00  },
-  ],
+  'This Week': [],
+  'This Month': [],
+  'This Year': [],
 };
 
 // ─── Period filter ────────────────────────────────────────────────────────────

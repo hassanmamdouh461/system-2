@@ -17,8 +17,8 @@ import { Client, Databases } from 'appwrite';
 
 export const APPWRITE_CONFIG = {
     ENDPOINT: 'https://fra.cloud.appwrite.io/v1',
-    PROJECT_ID: '698232950032f12e7895',
-    DB_ID: 'restaurant_db',
+    PROJECT_ID: '69879ae70002444f3f38',
+    DB_ID: '6a545eb00016d126bc82',
     COLLECTIONS: {
         MENU: 'menu_items',
         ORDERS: 'orders'

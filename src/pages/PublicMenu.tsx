@@ -41,8 +41,10 @@ const TRANSLATIONS = {
 
 const CATEGORY_TRANSLATIONS: Record<string, { en: string; ar: string }> = {
   'All': { en: 'All', ar: 'الكل' },
-  'Bar': { en: 'Bar / Drinks', ar: 'المشروبات' },
-  'Kitchen': { en: 'Kitchen / Food', ar: 'المأكولات' }
+  'Hot Coffee': { en: 'Hot Coffee', ar: 'قهوة ساخنة' },
+  'Iced Coffee': { en: 'Iced Coffee', ar: 'قهوة باردة' },
+  'Frappe': { en: 'Frappe', ar: 'فرابيه' },
+  'Milkshakes': { en: 'Milkshakes', ar: 'ميلك شيك' }
 };
 
 export default function PublicMenu() {
@@ -80,7 +82,7 @@ export default function PublicMenu() {
     return matchesCategory && matchesSearch;
   });
 
-  const categories = ['All', 'Bar', 'Kitchen'];
+  const categories = ['All', 'Hot Coffee', 'Iced Coffee', 'Frappe', 'Milkshakes'];
 
   if (loading) {
     return (
@@ -113,65 +115,57 @@ export default function PublicMenu() {
   }
 
   return (
-    <div className="min-h-screen relative pb-12 font-sans overflow-hidden text-white" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Background Image & Overlay */}
-      <div 
-        className="fixed inset-0 bg-cover bg-center z-0 scale-105 transition-transform duration-1000"
-        style={{ 
-          backgroundImage: `url('https://images.unsplash.com/photo-1498804103079-a6351b050096?w=1000&auto=format&fit=crop&q=80')` 
-        }}
-      />
-      <div className="fixed inset-0 bg-gradient-to-b from-stone-950/90 via-stone-900/85 to-stone-950/90 backdrop-blur-[3px] z-0" />
+    <div className="min-h-screen bg-mocha-50 pb-12 font-sans" dir={isRtl ? 'rtl' : 'ltr'}>
+      {/* Top Banner / Hero */}
+      <header className="relative bg-gradient-to-b from-mocha-900 to-mocha-800 text-white py-12 px-6 overflow-hidden rounded-b-[2.5rem] shadow-xl">
+        {/* Floating background blobs */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-caramel-light/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-mocha-400/10 rounded-full blur-2xl -ml-16 -mb-16"></div>
 
-      {/* Main Content Area */}
-      <div className="relative z-10 max-w-md mx-auto px-4">
-        {/* Top Banner / Hero */}
-        <header className="py-12 flex flex-col items-center text-center relative">
+        <div className="max-w-md mx-auto flex flex-col items-center text-center relative z-10">
           {/* Language Toggle */}
           <button
             onClick={() => setLang(prev => prev === 'ar' ? 'en' : 'ar')}
-            className="absolute top-4 right-0 bg-white/5 hover:bg-white/15 backdrop-blur text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-all text-stone-200 border border-white/10 shadow-lg"
+            className="absolute top-0 right-0 bg-white/10 hover:bg-white/20 backdrop-blur text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all text-white border border-white/10"
           >
-            <Globe size={14} className="text-amber-400" />
+            <Globe size={14} />
             {lang === 'ar' ? 'English' : 'العربية'}
           </button>
 
           {/* Logo */}
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="w-20 h-20 bg-gradient-to-br from-amber-500/20 to-amber-700/20 border border-amber-500/30 rounded-full flex items-center justify-center mb-4 shadow-xl shadow-amber-950/20 backdrop-blur-md"
-          >
-            <Coffee className="w-10 h-10 text-amber-400" />
-          </motion.div>
+          <div className="w-16 h-16 bg-white/10 border border-white/20 rounded-full flex items-center justify-center mb-4 shadow-inner backdrop-blur-sm">
+            <Coffee className="w-9 h-9 text-caramel" />
+          </div>
 
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-white via-stone-100 to-amber-200 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2 text-white">
             {t.title}
           </h1>
-          <p className="text-amber-400/80 text-xs font-semibold tracking-wider uppercase">
+          <p className="text-mocha-200 text-sm max-w-xs font-light">
             {t.subtitle}
           </p>
-        </header>
+        </div>
+      </header>
 
+      {/* Main Content Area */}
+      <main className="max-w-md mx-auto px-4 mt-6">
         {/* Search */}
-        <div className="relative mb-6 shadow-2xl">
-          <div className={`absolute inset-y-0 ${isRtl ? 'right-3.5' : 'left-3.5'} flex items-center pointer-events-none`}>
-            <Search className="h-5 w-5 text-stone-400" />
+        <div className="relative mb-6 shadow-sm">
+          <div className={`absolute inset-y-0 ${isRtl ? 'right-3' : 'left-3'} flex items-center pointer-events-none`}>
+            <Search className="h-5 w-5 text-mocha-400" />
           </div>
           <input
             type="text"
             placeholder={t.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full py-3.5 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm shadow-inner transition-all text-white placeholder-stone-400 backdrop-blur-md ${
-              isRtl ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4 text-left'
+            className={`w-full py-3 bg-white border border-mocha-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent text-sm shadow-inner transition-all ${
+              isRtl ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4 text-left'
             }`}
           />
         </div>
 
         {/* Categories Carousel */}
-        <div className="flex items-center gap-2.5 overflow-x-auto hide-scrollbar pb-3 mb-6 scroll-smooth">
+        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-3 mb-6 scroll-smooth">
           {categories.map(category => {
             const label = CATEGORY_TRANSLATIONS[category]?.[lang] || category;
             const isSelected = selectedCategory === category;
@@ -179,10 +173,10 @@ export default function PublicMenu() {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4.5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 ${
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
                   isSelected
-                    ? 'bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/25 scale-105 border border-amber-400'
-                    : 'bg-white/5 text-stone-300 border border-white/5 hover:bg-white/10 backdrop-blur-sm'
+                    ? 'bg-mocha-700 text-white shadow-md shadow-mocha-700/25 scale-105'
+                    : 'bg-white text-mocha-800 border border-mocha-100/50 hover:bg-mocha-100'
                 }`}
               >
                 {label}
@@ -202,44 +196,43 @@ export default function PublicMenu() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.25 }}
-                className={`bg-stone-900/40 border border-white/5 rounded-3xl p-4.5 shadow-xl relative overflow-hidden backdrop-blur-md flex flex-col justify-between transition-all ${
-                  !item.available ? 'opacity-50 saturate-50' : 'hover:border-white/15 hover:bg-stone-900/60'
-                }`}
+                className="bg-white rounded-2xl border border-mocha-100/40 p-3.5 shadow-sm relative overflow-hidden flex gap-4 transition-all hover:shadow-md"
               >
-                {/* Glowing subtle accent line inside card */}
-                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-                <div className="flex justify-between items-start gap-4 mb-2">
-                  <h3 className="font-bold text-white text-base tracking-wide">
-                    {item.name}
-                  </h3>
-                  <span className="font-black text-amber-400 text-base flex-shrink-0">
-                    {item.price.toFixed(2)} {lang === 'ar' ? 'ج.م' : 'EGP'}
-                  </span>
-                </div>
-
-                {item.description && (
-                  <p className="text-stone-300 text-xs leading-relaxed mb-4">
-                    {item.description}
-                  </p>
+                {/* Image */}
+                {item.image && (
+                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-mocha-50 flex-shrink-0 relative border border-mocha-100/30">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 )}
 
-                {/* Badges */}
-                <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                  <span className="text-[10px] text-amber-400/90 font-bold px-2.5 py-1 bg-amber-400/10 rounded-lg border border-amber-400/10">
-                    {CATEGORY_TRANSLATIONS[item.category]?.[lang] || item.category}
-                  </span>
+                {/* Details */}
+                <div className="flex-1 flex flex-col justify-between min-w-0">
+                  <div>
+                    <div className="flex justify-between items-start gap-2">
+                      <h3 className="font-bold text-gray-900 text-base truncate">
+                        {item.name}
+                      </h3>
+                      <span className="font-extrabold text-mocha-700 text-base">
+                        {item.price.toFixed(2)} {lang === 'ar' ? 'ج.م' : 'EGP'}
+                      </span>
+                    </div>
+                    {item.description && (
+                      <p className="text-gray-500 text-xs mt-1 font-sans leading-relaxed">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
 
-                  {item.available ? (
-                    <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg font-bold border border-emerald-500/10 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      {t.available}
+                  {/* Badges */}
+                  <div className="flex items-center justify-between mt-2 pt-1 border-t border-mocha-50/50">
+                    <span className="text-[10px] text-mocha-400 font-medium px-2 py-0.5 bg-mocha-50 rounded-full border border-mocha-100/20">
+                      {CATEGORY_TRANSLATIONS[item.category]?.[lang] || item.category}
                     </span>
-                  ) : (
-                    <span className="text-[10px] text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg font-bold border border-rose-500/10">
-                      {t.outOfStock}
-                    </span>
-                  )}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -251,23 +244,23 @@ export default function PublicMenu() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-16 px-4"
+            className="text-center py-12 px-4"
           >
-            <div className="bg-white/5 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10 backdrop-blur-md">
-              <Search className="w-8 h-8 text-stone-400" />
+            <div className="bg-mocha-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-mocha-200">
+              <Search className="w-8 h-8 text-mocha-500" />
             </div>
-            <p className="text-base font-bold text-stone-200">{t.noItems}</p>
-            <p className="text-xs text-stone-400 mt-1.5">{t.tryAgain}</p>
+            <p className="text-base font-bold text-mocha-900">{t.noItems}</p>
+            <p className="text-xs text-mocha-400 mt-1">{t.tryAgain}</p>
           </motion.div>
         )}
+      </main>
 
-        {/* Footer / Powered by */}
-        <footer className="text-center mt-16 pb-4">
-          <p className="text-xs text-stone-500 font-medium">
-            {lang === 'ar' ? 'بروماستر © ٢٠٢٦ - تم الصنع بحب ☕' : 'BrewMaster © 2026 - Made with Love ☕'}
-          </p>
-        </footer>
-      </div>
+      {/* Footer / Powered by */}
+      <footer className="text-center mt-12 px-4">
+        <p className="text-xs text-mocha-400 font-medium">
+          {lang === 'ar' ? 'بروماستر © ٢٠٢٦ - تم الصنع بحب ☕' : 'BrewMaster © 2026 - Made with Love ☕'}
+        </p>
+      </footer>
     </div>
   );
 }

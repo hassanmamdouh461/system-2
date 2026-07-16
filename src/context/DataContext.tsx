@@ -3,7 +3,6 @@ import { MenuItem } from '../types/menu';
 import { Order, OrderStatus } from '../types/order';
 import { menuService } from '../services/menuService';
 import { ordersService } from '../services/ordersService';
-import { client, APPWRITE_CONFIG } from '../lib/appwrite';
 
 /**
  * Pending-writes guard.
@@ -147,7 +146,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }, 300);
   }, [fetchMenu]);
 
-  // Fetch once on mount + setup realtime
+  // Fetch once on mount + setup periodic polling for other updates
   useEffect(() => {
     if (!menuFetched.current) {
       menuFetched.current = true;
@@ -158,22 +157,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       fetchOrders();
     }
 
-    // Realtime subscription - debounced refetch when orders or menu change externally
-    const ordersChannel = `databases.${APPWRITE_CONFIG.DB_ID}.collections.${APPWRITE_CONFIG.COLLECTIONS.ORDERS}.documents`;
-    const menuChannel = `databases.${APPWRITE_CONFIG.DB_ID}.collections.${APPWRITE_CONFIG.COLLECTIONS.MENU}.documents`;
-
-    const unsubscribe = client.subscribe([ordersChannel, menuChannel], (response) => {
-      const channels = response.channels as string[];
-      if (channels.some(c => c.includes(APPWRITE_CONFIG.COLLECTIONS.ORDERS))) {
-        debouncedFetchOrders();
-      }
-      if (channels.some(c => c.includes(APPWRITE_CONFIG.COLLECTIONS.MENU))) {
-        debouncedFetchMenu();
-      }
-    });
+    // Since Cloudflare D1/Worker is HTTP, we poll for updates every 15 seconds
+    const interval = setInterval(() => {
+      debouncedFetchOrders();
+      debouncedFetchMenu();
+    }, 15000);
 
     return () => {
-      unsubscribe();
+      clearInterval(interval);
       if (ordersDebounceRef.current) clearTimeout(ordersDebounceRef.current);
       if (menuDebounceRef.current) clearTimeout(menuDebounceRef.current);
     };

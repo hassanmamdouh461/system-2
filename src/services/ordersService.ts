@@ -1,25 +1,19 @@
-import { databases, directCreate, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
+import { executeD1Query } from '../lib/cloudflareD1';
 import { Order, OrderStatus, PaymentStatus } from '../types/order';
-import { ID, Query } from 'appwrite';
 
 /**
- * Orders Service - Handle all CRUD operations for Orders using Appwrite
+ * Orders Service - Handle all CRUD operations for Orders using Cloudflare D1
  */
 export const ordersService = {
   /**
-   * Fetch all orders from Appwrite
+   * Fetch all orders from D1
    */
   async getAll(): Promise<Order[]> {
     try {
-      const response = await databases.listDocuments(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.ORDERS,
-        [Query.limit(5000)]
-      );
-
-      return response.documents.map((doc: any) => {
-        // Parse items if it's a string (Appwrite might store it as JSON)
-        let items = doc.items;
+      const results = await executeD1Query<any>('SELECT * FROM orders ORDER BY createdAt DESC');
+      
+      return results.map((row: any) => {
+        let items = row.items;
         if (typeof items === 'string') {
           try {
             items = JSON.parse(items);
@@ -28,20 +22,19 @@ export const ordersService = {
             items = [];
           }
         }
-        // Ensure items is always an array
         if (!Array.isArray(items)) {
           items = [];
         }
 
         return {
-          id: doc.$id,
-          orderNumber: doc.orderNumber,
-          tableId: doc.tableId,
+          id: row.id,
+          orderNumber: row.orderNumber,
+          tableId: row.tableId,
           items,
-          status: doc.status as OrderStatus,
-          paymentStatus: (doc.paymentStatus as PaymentStatus) ?? 'Unpaid',
-          totalAmount: doc.totalAmount,
-          createdAt: doc.createdAt,
+          status: row.status as OrderStatus,
+          paymentStatus: (row.paymentStatus as PaymentStatus) ?? 'Unpaid',
+          totalAmount: Number(row.totalAmount),
+          createdAt: row.createdAt,
         };
       });
     } catch (error) {
@@ -51,37 +44,37 @@ export const ordersService = {
   },
 
   /**
-   * Create a new order in Appwrite
+   * Create a new order in D1
    */
   async create(order: Omit<Order, 'id'>): Promise<Order> {
     try {
-      const response = await directCreate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, ID.unique(), {
-        orderNumber: String(order.orderNumber),
-        tableId: String(order.tableId),
-        items: JSON.stringify(order.items),
-        status: String(order.status),
-        paymentStatus: order.paymentStatus ?? 'Unpaid',
-        totalAmount: Number(order.totalAmount),
-        createdAt: order.createdAt
-          ? new Date(order.createdAt).toISOString()
-          : new Date().toISOString(),
-      });
+      const id = crypto.randomUUID();
+      const createdAt = order.createdAt
+        ? new Date(order.createdAt).toISOString()
+        : new Date().toISOString();
 
-      let items = response.items;
-      if (typeof items === 'string') {
-        try { items = JSON.parse(items); } catch { items = []; }
-      }
-      if (!Array.isArray(items)) items = [];
+      await executeD1Query(
+        `INSERT INTO orders (id, orderNumber, tableId, items, status, paymentStatus, paymentMethod, totalAmount, createdAt, paidAt, branch_id) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          String(order.orderNumber),
+          String(order.tableId),
+          JSON.stringify(order.items),
+          String(order.status),
+          order.paymentStatus ?? 'Unpaid',
+          null, // paymentMethod
+          Number(order.totalAmount),
+          createdAt,
+          null, // paidAt
+          'default' // branch_id
+        ]
+      );
 
       return {
-        id: response.$id,
-        orderNumber: response.orderNumber,
-        tableId: response.tableId,
-        items,
-        status: response.status,
-        paymentStatus: (response.paymentStatus as PaymentStatus) ?? 'Unpaid',
-        totalAmount: response.totalAmount,
-        createdAt: response.createdAt,
+        id,
+        ...order,
+        createdAt,
       };
     } catch (error) {
       console.error('[ordersService] Error creating order:', error);
@@ -90,31 +83,37 @@ export const ordersService = {
   },
 
   /**
-   * Update order status in Appwrite
+   * Update order status in D1
    */
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     try {
-      const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id, { status: String(status) });
+      await executeD1Query(
+        'UPDATE orders SET status = ? WHERE id = ?',
+        [String(status), id]
+      );
 
-      // Parse items from JSON string
-      let items = response.items;
-      if (typeof items === 'string') {
-        try {
-          items = JSON.parse(items);
-        } catch (e) {
-          items = [];
-        }
+      // Fetch the updated order to return it
+      const updatedList = await executeD1Query<any>('SELECT * FROM orders WHERE id = ?', [id]);
+      if (updatedList.length === 0) {
+        throw new Error('Order not found after updateStatus');
       }
 
+      const row = updatedList[0];
+      let items = row.items;
+      if (typeof items === 'string') {
+        try { items = JSON.parse(items); } catch { items = []; }
+      }
+      if (!Array.isArray(items)) items = [];
+
       return {
-        id: response.$id,
-        orderNumber: response.orderNumber,
-        tableId: response.tableId,
+        id: row.id,
+        orderNumber: row.orderNumber,
+        tableId: row.tableId,
         items,
-        status: response.status,
-        paymentStatus: (response.paymentStatus as PaymentStatus) ?? 'Unpaid',
-        totalAmount: response.totalAmount,
-        createdAt: response.createdAt,
+        status: row.status as OrderStatus,
+        paymentStatus: (row.paymentStatus as PaymentStatus) ?? 'Unpaid',
+        totalAmount: Number(row.totalAmount),
+        createdAt: row.createdAt,
       };
     } catch (error) {
       console.error('[ordersService] Error updating order status:', error);
@@ -123,40 +122,93 @@ export const ordersService = {
   },
 
   /**
-   * Update entire order in Appwrite
+   * Update entire order in D1
    */
   async update(id: string, data: Partial<Omit<Order, 'id'>>): Promise<Order> {
     try {
-      const cleanData: Record<string, unknown> = {};
-      if (data.orderNumber !== undefined) cleanData.orderNumber = data.orderNumber;
-      if (data.tableId !== undefined) cleanData.tableId = data.tableId;
-      if (data.items !== undefined) cleanData.items = JSON.stringify(data.items);
-      if (data.status !== undefined) cleanData.status = String(data.status);
-      if (data.paymentStatus !== undefined) cleanData.paymentStatus = String(data.paymentStatus);
-      if (data.totalAmount !== undefined) cleanData.totalAmount = Number(data.totalAmount);
-      if (data.createdAt !== undefined) cleanData.createdAt = data.createdAt;
+      const fieldsToUpdate: string[] = [];
+      const params: any[] = [];
 
-      const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id, cleanData);
-
-      // Parse items from JSON string
-      let items = response.items;
-      if (typeof items === 'string') {
-        try {
-          items = JSON.parse(items);
-        } catch (e) {
-          items = [];
-        }
+      if (data.orderNumber !== undefined) {
+        fieldsToUpdate.push('orderNumber = ?');
+        params.push(String(data.orderNumber));
+      }
+      if (data.tableId !== undefined) {
+        fieldsToUpdate.push('tableId = ?');
+        params.push(String(data.tableId));
+      }
+      if (data.items !== undefined) {
+        fieldsToUpdate.push('items = ?');
+        params.push(JSON.stringify(data.items));
+      }
+      if (data.status !== undefined) {
+        fieldsToUpdate.push('status = ?');
+        params.push(String(data.status));
+      }
+      if (data.paymentStatus !== undefined) {
+        fieldsToUpdate.push('paymentStatus = ?');
+        params.push(String(data.paymentStatus));
+      }
+      if (data.totalAmount !== undefined) {
+        fieldsToUpdate.push('totalAmount = ?');
+        params.push(Number(data.totalAmount));
+      }
+      if (data.createdAt !== undefined) {
+        fieldsToUpdate.push('createdAt = ?');
+        params.push(data.createdAt);
       }
 
+      if (fieldsToUpdate.length === 0) {
+        // Nothing to update, fetch and return
+        const updatedList = await executeD1Query<any>('SELECT * FROM orders WHERE id = ?', [id]);
+        if (updatedList.length === 0) throw new Error('Order not found');
+        const row = updatedList[0];
+        let items = row.items;
+        if (typeof items === 'string') {
+          try { items = JSON.parse(items); } catch { items = []; }
+        }
+        if (!Array.isArray(items)) items = [];
+        return {
+          id: row.id,
+          orderNumber: row.orderNumber,
+          tableId: row.tableId,
+          items,
+          status: row.status as OrderStatus,
+          paymentStatus: (row.paymentStatus as PaymentStatus) ?? 'Unpaid',
+          totalAmount: Number(row.totalAmount),
+          createdAt: row.createdAt,
+        };
+      }
+
+      params.push(id); // for the WHERE clause
+
+      await executeD1Query(
+        `UPDATE orders SET ${fieldsToUpdate.join(', ')} WHERE id = ?`,
+        params
+      );
+
+      // Fetch the updated order to return it
+      const updatedList = await executeD1Query<any>('SELECT * FROM orders WHERE id = ?', [id]);
+      if (updatedList.length === 0) {
+        throw new Error('Order not found after update');
+      }
+
+      const row = updatedList[0];
+      let items = row.items;
+      if (typeof items === 'string') {
+        try { items = JSON.parse(items); } catch { items = []; }
+      }
+      if (!Array.isArray(items)) items = [];
+
       return {
-        id: response.$id,
-        orderNumber: response.orderNumber,
-        tableId: response.tableId,
+        id: row.id,
+        orderNumber: row.orderNumber,
+        tableId: row.tableId,
         items,
-        status: response.status,
-        paymentStatus: (response.paymentStatus as PaymentStatus) ?? 'Unpaid',
-        totalAmount: response.totalAmount,
-        createdAt: response.createdAt,
+        status: row.status as OrderStatus,
+        paymentStatus: (row.paymentStatus as PaymentStatus) ?? 'Unpaid',
+        totalAmount: Number(row.totalAmount),
+        createdAt: row.createdAt,
       };
     } catch (error) {
       console.error('[ordersService] Error updating order:', error);
@@ -166,33 +218,36 @@ export const ordersService = {
 
   /**
    * Mark an order as Paid — called exclusively from Payment.tsx.
-   * Only writes paymentStatus + paymentMethod. Kitchen status is NEVER touched
-   * here — separation of concerns: the cashier's action must not override the
-   * kitchen workflow (an order can be paid while still 'New' or 'Preparing').
-   * Revenue is recognised the moment paymentStatus becomes 'Paid'.
    */
   async completeWithPayment(id: string, method: 'Cash' | 'Card' = 'Cash'): Promise<Order> {
     try {
-      const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id, {
-        paymentStatus: 'Paid',
-        paymentMethod: method,
-      });
+      const now = new Date().toISOString();
+      await executeD1Query(
+        'UPDATE orders SET paymentStatus = ?, paymentMethod = ?, paidAt = ? WHERE id = ?',
+        ['Paid', method, now, id]
+      );
 
-      let items = response.items;
+      const updatedList = await executeD1Query<any>('SELECT * FROM orders WHERE id = ?', [id]);
+      if (updatedList.length === 0) {
+        throw new Error('Order not found after payment');
+      }
+
+      const row = updatedList[0];
+      let items = row.items;
       if (typeof items === 'string') {
         try { items = JSON.parse(items); } catch { items = []; }
       }
       if (!Array.isArray(items)) items = [];
 
       return {
-        id: response.$id,
-        orderNumber: response.orderNumber,
-        tableId: response.tableId,
+        id: row.id,
+        orderNumber: row.orderNumber,
+        tableId: row.tableId,
         items,
-        status: response.status,
+        status: row.status as OrderStatus,
         paymentStatus: 'Paid',
-        totalAmount: response.totalAmount,
-        createdAt: response.createdAt,
+        totalAmount: Number(row.totalAmount),
+        createdAt: row.createdAt,
       };
     } catch (error) {
       console.error('[ordersService] Error completing order with payment:', error);
@@ -201,11 +256,11 @@ export const ordersService = {
   },
 
   /**
-   * Delete an order from Appwrite
+   * Delete an order from D1
    */
   async delete(id: string): Promise<void> {
     try {
-      await directDelete(APPWRITE_CONFIG.COLLECTIONS.ORDERS, id);
+      await executeD1Query('DELETE FROM orders WHERE id = ?', [id]);
     } catch (error) {
       console.error('[ordersService] Error deleting order:', error);
       throw new Error('Failed to delete order');
@@ -217,13 +272,8 @@ export const ordersService = {
    */
   async resetToDefaults(defaultOrders: Omit<Order, 'id'>[]): Promise<Order[]> {
     try {
-      // Get all existing orders
-      const existing = await this.getAll();
+      await executeD1Query('DELETE FROM orders');
       
-      // Delete all existing orders
-      await Promise.all(existing.map(order => this.delete(order.id)));
-      
-      // Create new default orders
       const created = await Promise.all(
         defaultOrders.map(order => this.create(order))
       );

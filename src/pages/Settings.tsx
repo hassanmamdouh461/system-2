@@ -16,7 +16,7 @@ export default function Settings() {
   const { logout } = useAuth();
 
   const handleResetOrders = async () => {
-    if (window.confirm('⚠️ This will reset all orders in Appwrite to default. Continue?')) {
+    if (window.confirm('⚠️ This will reset all orders in Cloudflare D1 to default. Continue?')) {
       try {
         setResetting(true);
         await ordersService.resetToDefaults(MOCK_ORDERS);
@@ -32,7 +32,7 @@ export default function Settings() {
   };
 
   const handleResetMenu = async () => {
-    if (window.confirm('⚠️ This will reset menu in Appwrite to default 8 items. Continue?')) {
+    if (window.confirm('⚠️ This will reset menu in Cloudflare D1 to default 8 items. Continue?')) {
       try {
         setResetting(true);
         await menuService.resetToDefaults(INITIAL_MENU_ITEMS);
@@ -48,7 +48,7 @@ export default function Settings() {
   };
 
   const handleClearAllData = async () => {
-    if (window.confirm('⚠️ This will delete ALL data from Appwrite (Menu + Orders). Continue?')) {
+    if (window.confirm('⚠️ This will delete ALL data from Cloudflare D1 (Menu + Orders). Continue?')) {
       try {
         setResetting(true);
         // Delete all menu items
@@ -173,7 +173,7 @@ export default function Settings() {
               </div>
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900 text-sm md:text-base">Reset Orders</h3>
-                <p className="text-xs md:text-sm text-gray-500">Reset Appwrite orders to defaults</p>
+                <p className="text-xs md:text-sm text-gray-500">Reset Cloudflare D1 orders to defaults</p>
               </div>
             </button>
 
@@ -187,7 +187,7 @@ export default function Settings() {
               </div>
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900 text-sm md:text-base">Reset Menu</h3>
-                <p className="text-xs md:text-sm text-gray-500">Reset Appwrite menu to 8 items</p>
+                <p className="text-xs md:text-sm text-gray-500">Reset Cloudflare D1 menu to 8 items</p>
               </div>
             </button>
 
@@ -201,7 +201,7 @@ export default function Settings() {
               </div>
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900 text-sm md:text-base">Clear All Data</h3>
-                <p className="text-xs md:text-sm text-gray-500">Delete everything from Appwrite</p>
+                <p className="text-xs md:text-sm text-gray-500">Delete everything from Cloudflare D1</p>
               </div>
             </button>
           </div>

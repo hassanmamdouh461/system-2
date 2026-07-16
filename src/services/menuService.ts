@@ -1,30 +1,24 @@
-import { databases, directCreate, directUpdate, directDelete, APPWRITE_CONFIG } from '../lib/appwrite';
+import { executeD1Query } from '../lib/cloudflareD1';
 import { MenuItem } from '../types/menu';
-import { ID, Query } from 'appwrite';
 
 /**
- * Menu Service - Handle all CRUD operations for Menu Items using Appwrite
+ * Menu Service - Handle all CRUD operations for Menu Items using Cloudflare D1
  */
 export const menuService = {
   /**
-   * Fetch all menu items from Appwrite
+   * Fetch all menu items from D1
    */
   async getAll(): Promise<MenuItem[]> {
     try {
-      const response = await databases.listDocuments(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.MENU,
-        [Query.limit(5000)]
-      );
-
-      return response.documents.map((doc: any) => ({
-        id: doc.$id,
-        name: doc.name,
-        description: doc.description,
-        price: doc.price,
-        category: doc.category,
-        image: doc.image,
-        available: doc.available,
+      const results = await executeD1Query<any>('SELECT * FROM menu_items ORDER BY category, name');
+      return results.map((row: any) => ({
+        id: row.id,
+        name: row.name,
+        description: row.description || '',
+        price: Number(row.price),
+        category: row.category,
+        image: row.image || '',
+        available: Boolean(row.available),
       }));
     } catch (error) {
       console.error('[menuService] Error fetching menu items:', error);
@@ -33,28 +27,26 @@ export const menuService = {
   },
 
   /**
-   * Create a new menu item in Appwrite
+   * Create a new menu item in D1
    */
-  async create(item: Omit<MenuItem, 'id'>): Promise<MenuItem> {
+  async create(item: MenuItem): Promise<MenuItem> {
     try {
-      const response = await directCreate(APPWRITE_CONFIG.COLLECTIONS.MENU, ID.unique(), {
-        name: String(item.name),
-        description: String(item.description ?? ''),
-        price: Number(item.price),
-        category: String(item.category),
-        image: String(item.image ?? ''),
-        available: Boolean(item.available),
-      });
+      await executeD1Query(
+        `INSERT INTO menu_items (id, name, description, price, category, image, available, branch_id) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          item.id,
+          String(item.name),
+          String(item.description ?? ''),
+          Number(item.price),
+          String(item.category),
+          String(item.image ?? ''),
+          item.available ? 1 : 0,
+          'default'
+        ]
+      );
 
-      return {
-        id: response.$id,
-        name: response.name,
-        description: response.description,
-        price: response.price,
-        category: response.category,
-        image: response.image,
-        available: response.available,
-      };
+      return item;
     } catch (error) {
       console.error('[menuService] Error creating menu item:', error);
       throw new Error('Failed to create menu item');
@@ -62,28 +54,76 @@ export const menuService = {
   },
 
   /**
-   * Update an existing menu item in Appwrite
+   * Update an existing menu item in D1
    */
   async update(id: string, data: Partial<Omit<MenuItem, 'id'>>): Promise<MenuItem> {
     try {
-      const cleanData: Record<string, unknown> = {};
-      if (data.name !== undefined) cleanData.name = data.name;
-      if (data.description !== undefined) cleanData.description = data.description;
-      if (data.price !== undefined) cleanData.price = Number(data.price);
-      if (data.category !== undefined) cleanData.category = data.category;
-      if (data.image !== undefined) cleanData.image = data.image;
-      if (data.available !== undefined) cleanData.available = Boolean(data.available);
+      const fieldsToUpdate: string[] = [];
+      const params: any[] = [];
 
-      const response = await directUpdate(APPWRITE_CONFIG.COLLECTIONS.MENU, id, cleanData);
+      if (data.name !== undefined) {
+        fieldsToUpdate.push('name = ?');
+        params.push(String(data.name));
+      }
+      if (data.description !== undefined) {
+        fieldsToUpdate.push('description = ?');
+        params.push(String(data.description));
+      }
+      if (data.price !== undefined) {
+        fieldsToUpdate.push('price = ?');
+        params.push(Number(data.price));
+      }
+      if (data.category !== undefined) {
+        fieldsToUpdate.push('category = ?');
+        params.push(String(data.category));
+      }
+      if (data.image !== undefined) {
+        fieldsToUpdate.push('image = ?');
+        params.push(String(data.image));
+      }
+      if (data.available !== undefined) {
+        fieldsToUpdate.push('available = ?');
+        params.push(data.available ? 1 : 0);
+      }
 
+      if (fieldsToUpdate.length === 0) {
+        // Nothing to update, fetch and return
+        const updatedList = await executeD1Query<any>('SELECT * FROM menu_items WHERE id = ?', [id]);
+        if (updatedList.length === 0) throw new Error('Menu item not found');
+        const row = updatedList[0];
+        return {
+          id: row.id,
+          name: row.name,
+          description: row.description || '',
+          price: Number(row.price),
+          category: row.category,
+          image: row.image || '',
+          available: Boolean(row.available),
+        };
+      }
+
+      params.push(id); // for the WHERE clause
+
+      await executeD1Query(
+        `UPDATE menu_items SET ${fieldsToUpdate.join(', ')} WHERE id = ?`,
+        params
+      );
+
+      // Fetch the updated item to return it
+      const updatedList = await executeD1Query<any>('SELECT * FROM menu_items WHERE id = ?', [id]);
+      if (updatedList.length === 0) {
+        throw new Error('Menu item not found after update');
+      }
+
+      const row = updatedList[0];
       return {
-        id: response.$id,
-        name: response.name,
-        description: response.description,
-        price: response.price,
-        category: response.category,
-        image: response.image,
-        available: response.available,
+        id: row.id,
+        name: row.name,
+        description: row.description || '',
+        price: Number(row.price),
+        category: row.category,
+        image: row.image || '',
+        available: Boolean(row.available),
       };
     } catch (error) {
       console.error('[menuService] Error updating menu item:', error);
@@ -92,11 +132,11 @@ export const menuService = {
   },
 
   /**
-   * Delete a menu item from Appwrite
+   * Delete a menu item from D1
    */
   async delete(id: string): Promise<void> {
     try {
-      await directDelete(APPWRITE_CONFIG.COLLECTIONS.MENU, id);
+      await executeD1Query('DELETE FROM menu_items WHERE id = ?', [id]);
     } catch (error) {
       console.error('[menuService] Error deleting menu item:', error);
       throw new Error('Failed to delete menu item');
@@ -106,13 +146,10 @@ export const menuService = {
   /**
    * Reset menu to default items (delete all + recreate)
    */
-  async resetToDefaults(defaultItems: Omit<MenuItem, 'id'>[]): Promise<MenuItem[]> {
+  async resetToDefaults(defaultItems: MenuItem[]): Promise<MenuItem[]> {
     try {
-      // Get all existing items
-      const existing = await this.getAll();
-      
       // Delete all existing items
-      await Promise.all(existing.map(item => this.delete(item.id)));
+      await executeD1Query('DELETE FROM menu_items');
       
       // Create new default items
       const created = await Promise.all(

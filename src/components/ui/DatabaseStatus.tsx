@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Database, Wifi, WifiOff, RefreshCw } from 'lucide-react';
-import { databases, APPWRITE_CONFIG } from '../../lib/appwrite';
+import { executeD1Query } from '../../lib/cloudflareD1';
 import { motion } from 'framer-motion';
 
 type ConnectionStatus = 'checking' | 'connected' | 'disconnected' | 'error';
@@ -12,12 +12,8 @@ export function DatabaseStatus() {
   const checkConnection = async () => {
     setStatus('checking');
     try {
-      // Try to list documents from menu collection
-      await databases.listDocuments(
-        APPWRITE_CONFIG.DB_ID,
-        APPWRITE_CONFIG.COLLECTIONS.MENU,
-        []
-      );
+      // Execute simple query to check connection
+      await executeD1Query('SELECT 1');
       setStatus('connected');
       setLastChecked(new Date());
     } catch (error) {
@@ -62,7 +58,7 @@ export function DatabaseStatus() {
           bgColor: 'bg-red-50',
           borderColor: 'border-red-200',
           label: 'Connection Error',
-          description: 'Unable to connect to Appwrite database',
+          description: 'Unable to connect to Cloudflare D1 database',
         };
     }
   };
@@ -98,15 +94,15 @@ export function DatabaseStatus() {
               {config.description}
             </p>
             
-            {/* Connection Status Info - No Sensitive Data */}
+            {/* Connection Status Info */}
             <div className="space-y-1 text-xs text-gray-500">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium">Region:</span>
-                <span>Frankfurt (fra)</span>
+                <span>Cloudflare Edge (D1)</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium">Database:</span>
-                <span className="font-mono">restaurant_db</span>
+                <span className="font-mono">brewmaster-db</span>
               </div>
               {lastChecked && (
                 <div className="flex items-center gap-2">

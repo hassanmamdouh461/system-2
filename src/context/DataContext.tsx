@@ -1,19 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { MenuItem } from '../types/menu';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { MenuItem, INITIAL_MENU_ITEMS } from '../types/menu';
 import { Order, OrderStatus } from '../types/order';
-import { menuService } from '../services/menuService';
-import { ordersService } from '../services/ordersService';
-
-/**
- * Pending-writes guard.
- * While a mutation is in-flight we track the optimistic patch so that any
- * realtime-triggered refetch that races back with stale server data won't
- * overwrite the optimistic state the user already sees.
- */
-interface PendingWrite {
-  id: string;
-  patch: Partial<Order>;
-}
+import { menuRepository, orderRepository } from '../repositories';
+import { useAuth } from './AuthContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,18 +10,19 @@ interface MenuState {
   items: MenuItem[];
   loading: boolean;
   error: Error | null;
-  addItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
+  addItem: (item: Omit<MenuItem, 'id'>) => Promise<MenuItem | null>;
   updateItem: (id: string, data: Partial<Omit<MenuItem, 'id'>>) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
   toggleAvailability: (id: string) => Promise<void>;
   refetch: () => Promise<void>;
+  resetMenu: () => Promise<void>;
 }
 
 interface OrdersState {
   orders: Order[];
   loading: boolean;
   error: Error | null;
-  addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
+  addOrder: (order: Omit<Order, 'id'>) => Promise<Order | null>;
   updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
   completeWithPayment: (id: string, method?: 'Cash' | 'Card') => Promise<void>;
   updateOrder: (id: string, data: Partial<Omit<Order, 'id'>>) => Promise<void>;
@@ -52,6 +42,9 @@ const DataContext = createContext<DataContextValue | null>(null);
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
+  // Get the current branch session for auto-injecting branchId into new records
+  const { branch } = useAuth();
+
   // Menu state
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [menuLoading, setMenuLoading] = useState(true);
@@ -62,224 +55,146 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<Error | null>(null);
 
-  // Track if already fetched (prevent double-fetch in StrictMode)
-  const menuFetched = useRef(false);
-  const ordersFetched = useRef(false);
-
-  // ── Pending-writes guard ──────────────────────────────────────────────────────
-  // Tracks in-flight mutation patches so realtime refetches don't overwrite
-  // optimistic state with stale server data.
-  const pendingWritesRef = useRef<PendingWrite[]>([]);
-
-  const addPendingWrite = (id: string, patch: Partial<Order>) => {
-    pendingWritesRef.current = [...pendingWritesRef.current, { id, patch }];
-  };
-  const removePendingWrite = (id: string) => {
-    pendingWritesRef.current = pendingWritesRef.current.filter(pw => pw.id !== id);
-  };
-
-  /**
-   * Apply any pending optimistic patches on top of server data so that
-   * a stale refetch can never regress what the user already sees.
-   */
-  const mergeWithPending = (serverOrders: Order[]): Order[] => {
-    const pending = pendingWritesRef.current;
-    if (pending.length === 0) return serverOrders;
-    return serverOrders.map(order => {
-      const pw = pending.find(p => p.id === order.id);
-      return pw ? { ...order, ...pw.patch } : order;
-    });
-  };
-
-  // ── Debounce timer for realtime refetches ──────────────────────────────────
-  const ordersDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const menuDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   // ── Menu fetching ────────────────────────────────────────────────────────────
 
   const fetchMenu = useCallback(async () => {
     try {
       setMenuLoading(true);
       setMenuError(null);
-      const data = await menuService.getAll();
+      const data = await menuRepository.getAll(branch?.branchId);
       setMenuItems(data);
     } catch (err) {
-      setMenuError(err as Error);
+      console.warn('[DataContext] Failed to fetch menu from repository, using default initial items:', err);
+      setMenuItems(INITIAL_MENU_ITEMS);
     } finally {
       setMenuLoading(false);
     }
-  }, []);
+  }, [branch?.branchId]);
 
-  // ── Orders fetching (with pending-writes merge) ───────────────────────────
+  // ── Orders fetching ───────────────────────────────────────────────────────────
 
   const fetchOrders = useCallback(async () => {
     try {
       setOrdersLoading(true);
       setOrdersError(null);
-      const data = await ordersService.getAll();
-      // Merge pending optimistic writes so stale server data can't regress the UI
-      setOrdersList(mergeWithPending(data));
+      const data = await orderRepository.getAll(branch?.branchId);
+      setOrdersList(data);
     } catch (err) {
-      setOrdersError(err as Error);
+      console.warn('[DataContext] Failed to fetch orders from repository:', err);
+      setOrdersList([]);
     } finally {
       setOrdersLoading(false);
     }
-  }, []);
+  }, [branch?.branchId]);
 
-  /**
-   * Debounced version of fetchOrders for realtime events.
-   * Appwrite can fire multiple realtime events in rapid succession (e.g. when
-   * a document update triggers both a create and update event, or when multiple
-   * documents change). Debouncing collapses them into a single refetch.
-   */
-  const debouncedFetchOrders = useCallback(() => {
-    if (ordersDebounceRef.current) clearTimeout(ordersDebounceRef.current);
-    ordersDebounceRef.current = setTimeout(() => {
-      fetchOrders();
-    }, 300);
-  }, [fetchOrders]);
-
-  const debouncedFetchMenu = useCallback(() => {
-    if (menuDebounceRef.current) clearTimeout(menuDebounceRef.current);
-    menuDebounceRef.current = setTimeout(() => {
-      fetchMenu();
-    }, 300);
-  }, [fetchMenu]);
-
-  // Fetch once on mount + setup periodic polling for other updates
+  // Fetch when branch changes
   useEffect(() => {
-    if (!menuFetched.current) {
-      menuFetched.current = true;
-      fetchMenu();
-    }
-    if (!ordersFetched.current) {
-      ordersFetched.current = true;
-      fetchOrders();
-    }
-
-    // Since Cloudflare D1/Worker is HTTP, we poll for updates every 15 seconds
-    const interval = setInterval(() => {
-      debouncedFetchOrders();
-      debouncedFetchMenu();
-    }, 15000);
-
-    return () => {
-      clearInterval(interval);
-      if (ordersDebounceRef.current) clearTimeout(ordersDebounceRef.current);
-      if (menuDebounceRef.current) clearTimeout(menuDebounceRef.current);
-    };
-  }, [fetchMenu, fetchOrders, debouncedFetchOrders, debouncedFetchMenu]);
-
-  // ── Refs for rollback — always point to latest state ─────────────────────────
-  const menuItemsRef = useRef(menuItems);
-  menuItemsRef.current = menuItems;
-  const ordersListRef = useRef(ordersList);
-  ordersListRef.current = ordersList;
+    fetchMenu();
+    fetchOrders();
+  }, [fetchMenu, fetchOrders]);
 
   // ── Menu mutations ────────────────────────────────────────────────────────────
 
   const addItem = useCallback(async (item: Omit<MenuItem, 'id'>) => {
-    const newItem = await menuService.create(item);
-    setMenuItems(prev => [newItem, ...prev]);
-  }, []);
+    try {
+      const newItem = await menuRepository.create(item, branch?.branchId);
+      setMenuItems(prev => [newItem, ...prev]);
+      return newItem;
+    } catch (err) {
+      console.error('[DataContext] Failed to create item in repository:', err);
+      return null;
+    }
+  }, [branch?.branchId]);
 
   const updateItem = useCallback(async (id: string, data: Partial<Omit<MenuItem, 'id'>>) => {
-    const snapshot = menuItemsRef.current;
-    setMenuItems(prev => prev.map(i => i.id === id ? { ...i, ...data } : i));
     try {
-      await menuService.update(id, data);
+      const updatedItem = await menuRepository.update(id, data);
+      setMenuItems(prev => prev.map(i => i.id === id ? updatedItem : i));
     } catch (err) {
-      setMenuItems(snapshot);
-      throw err;
+      console.error('[DataContext] Failed to update item in repository:', err);
     }
   }, []);
 
   const deleteItem = useCallback(async (id: string) => {
-    const snapshot = menuItemsRef.current;
-    setMenuItems(prev => prev.filter(i => i.id !== id));
     try {
-      await menuService.delete(id);
+      await menuRepository.delete(id);
+      setMenuItems(prev => prev.filter(i => i.id !== id));
     } catch (err) {
-      setMenuItems(snapshot);
-      throw err;
+      console.error('[DataContext] Failed to delete item in repository:', err);
     }
   }, []);
 
   const toggleAvailability = useCallback(async (id: string) => {
-    const item = menuItemsRef.current.find(i => i.id === id);
+    const item = menuItems.find(i => i.id === id);
     if (!item) return;
-    const snapshot = menuItemsRef.current;
-    setMenuItems(prev => prev.map(i => i.id === id ? { ...i, available: !i.available } : i));
     try {
-      await menuService.update(id, { available: !item.available });
+      const updatedItem = await menuRepository.update(id, { available: !item.available });
+      setMenuItems(prev => prev.map(i => i.id === id ? updatedItem : i));
     } catch (err) {
-      setMenuItems(snapshot);
-      throw err;
+      console.error('[DataContext] Failed to toggle availability in repository:', err);
     }
-  }, []);
+  }, [menuItems]);
+
+  const resetMenu = useCallback(async () => {
+    try {
+      setMenuLoading(true);
+      setMenuError(null);
+      const seeded = await menuRepository.resetToDefaults(INITIAL_MENU_ITEMS, branch?.branchId);
+      setMenuItems(seeded);
+    } catch (err) {
+      console.error('[DataContext] Failed to reset menu to defaults:', err);
+      setMenuError(err as Error);
+    } finally {
+      setMenuLoading(false);
+    }
+  }, [branch?.branchId]);
 
   // ── Orders mutations ──────────────────────────────────────────────────────────
 
-  const addOrder = useCallback(async (order: Omit<Order, 'id'>) => {
-    const newOrder = await ordersService.create(order);
-    setOrdersList(prev => [newOrder, ...prev]);
-  }, []);
+  const addOrder = useCallback(async (order: Omit<Order, 'id'>): Promise<Order | null> => {
+    try {
+      const newOrder = await orderRepository.create(order, branch?.branchId);
+      setOrdersList(prev => [newOrder, ...prev]);
+      return newOrder;
+    } catch (err) {
+      console.error('[DataContext] Failed to create order in repository:', err);
+      return null;
+    }
+  }, [branch?.branchId]);
 
   const updateOrderStatus = useCallback(async (id: string, status: OrderStatus) => {
-    const snapshot = ordersListRef.current;
-    const patch = { status };
-    addPendingWrite(id, patch);
-    setOrdersList(prev => prev.map(o => o.id === id ? { ...o, ...patch } : o));
     try {
-      await ordersService.updateStatus(id, status);
+      const updatedOrder = await orderRepository.updateStatus(id, status);
+      setOrdersList(prev => prev.map(o => o.id === id ? updatedOrder : o));
     } catch (err) {
-      setOrdersList(snapshot);
-      throw err;
-    } finally {
-      removePendingWrite(id);
+      console.error('[DataContext] Failed to update order status in repository:', err);
     }
   }, []);
 
   const completeWithPayment = useCallback(async (id: string, method: 'Cash' | 'Card' = 'Cash') => {
-    const snapshot = ordersListRef.current;
-    // Optimistic update: only flip paymentStatus — kitchen status is unchanged.
-    const patch: Partial<Order> = { paymentStatus: 'Paid' };
-    addPendingWrite(id, patch);
-    setOrdersList(prev => prev.map(o =>
-      o.id === id ? { ...o, ...patch } : o
-    ));
     try {
-      await ordersService.completeWithPayment(id, method);
+      const updatedOrder = await orderRepository.completeWithPayment(id, method);
+      setOrdersList(prev => prev.map(o => o.id === id ? updatedOrder : o));
     } catch (err) {
-      setOrdersList(snapshot);
-      throw err;
-    } finally {
-      removePendingWrite(id);
+      console.error('[DataContext] Failed to complete payment in repository:', err);
     }
   }, []);
 
   const updateOrder = useCallback(async (id: string, data: Partial<Omit<Order, 'id'>>) => {
-    const snapshot = ordersListRef.current;
-    addPendingWrite(id, data as Partial<Order>);
-    setOrdersList(prev => prev.map(o => o.id === id ? { ...o, ...data } : o));
     try {
-      await ordersService.update(id, data);
+      const updatedOrder = await orderRepository.update(id, data);
+      setOrdersList(prev => prev.map(o => o.id === id ? updatedOrder : o));
     } catch (err) {
-      setOrdersList(snapshot);
-      throw err;
-    } finally {
-      removePendingWrite(id);
+      console.error('[DataContext] Failed to update order in repository:', err);
     }
   }, []);
 
   const deleteOrder = useCallback(async (id: string) => {
-    const snapshot = ordersListRef.current;
-    setOrdersList(prev => prev.filter(o => o.id !== id));
     try {
-      await ordersService.delete(id);
+      await orderRepository.delete(id);
+      setOrdersList(prev => prev.filter(o => o.id !== id));
     } catch (err) {
-      setOrdersList(snapshot);
-      throw err;
+      console.error('[DataContext] Failed to delete order in repository:', err);
     }
   }, []);
 
@@ -295,6 +210,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       deleteItem,
       toggleAvailability,
       refetch: fetchMenu,
+      resetMenu,
     },
     orders: {
       orders: ordersList,
@@ -325,3 +241,4 @@ export function useOrdersContext(): OrdersState {
   if (!ctx) throw new Error('useOrdersContext must be used within DataProvider');
   return ctx.orders;
 }
+

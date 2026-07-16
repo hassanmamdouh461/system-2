@@ -5,7 +5,7 @@
  *
  * Dual-mode formula:
  *   • 'Today'               → 100 % real data only. Revenue, orders, and top items
- *                             are derived exclusively from live Appwrite records.
+ *                             are derived exclusively from live database records.
  *                             Dashboard starts at $0.00 / 0 orders each morning.
  *   • 'This Week/Month/Year'→ historical baseline  +  real completed orders.
  *                             Keeps realistic aggregate numbers for portfolio demos.
@@ -13,6 +13,7 @@
  * When Reports is on "Today", every number matches Dashboard exactly.
  */
 import { useMemo } from 'react';
+import { getTaxRate } from '../utils/settingsConfig';
 import { useOrders } from './useOrders';
 import { useMenu } from './useMenu';
 import { Order, OrderStatus } from '../types/order';
@@ -30,9 +31,9 @@ const BASELINE: Record<AnalyticsPeriod, {
   revenue: number;        // revenue from completed orders
 }> = {
   'Today':      { orders: 0,    completedOrders: 0,    revenue: 0     },  // 🎬 demo baseline: starts clean
-  'This Week':  { orders: 0,    completedOrders: 0,    revenue: 0     },
-  'This Month': { orders: 0,    completedOrders: 0,    revenue: 0     },
-  'This Year':  { orders: 0,    completedOrders: 0,    revenue: 0     },
+  'This Week':  { orders: 120,  completedOrders: 98,   revenue: 950   },
+  'This Month': { orders: 520,  completedOrders: 425,  revenue: 4200  },
+  'This Year':  { orders: 6500, completedOrders: 5300, revenue: 52000 },
 };
 
 // ─── Chart Baseline ───────────────────────────────────────────────────────────
@@ -50,17 +51,17 @@ const CHART_CONFIG: Record<AnalyticsPeriod, {
   },
   'This Week': {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    base:   [0,   0,   0,   0,   0,   0,   0],
+    base:   [100,   130,   105,   145,   165,   185,   120],                                       // sum=950
     getBucket: (d) => (d.getDay() + 6) % 7,
   },
   'This Month': {
     labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'],
-    base:   [0,    0,   0,   0],
+    base:   [950,    1050,   1100,   1100],                                                        // sum=4200
     getBucket: (d) => Math.min(Math.floor((d.getDate() - 1) / 7), 3),
   },
   'This Year': {
     labels: ['Jan',  'Feb',  'Mar',  'Apr',  'May',  'Jun',  'Jul',  'Aug',  'Sep',  'Oct',  'Nov',  'Dec'],
-    base:   [0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+    base:   [2600,   2900,   3600,   3900,   4100,   4700,   4400,   5200,   3900,   4600,   5300,   6300], // sum≈52500
     getBucket: (d) => d.getMonth(),
   },
 };
@@ -70,9 +71,27 @@ const CHART_CONFIG: Record<AnalyticsPeriod, {
 // to the overall order/revenue baseline for that period.
 const TOP_ITEMS_BOOST: Record<AnalyticsPeriod, TopItem[]> = {
   'Today': [],  // 🎬 demo baseline: no pre-seeded items — only real orders appear
-  'This Week': [],
-  'This Month': [],
-  'This Year': [],
+  'This Week': [
+    { name: 'Spanish Latte',          count: 52,   revenue: 312.00  },
+    { name: 'Iced Caramel Macchiato', count: 43,   revenue: 279.50  },
+    { name: 'Cappuccino',             count: 38,   revenue: 190.00  },
+    { name: 'Mocha Frappe',           count: 31,   revenue: 217.00  },
+    { name: 'Espresso Shot',          count: 24,   revenue: 96.00   },
+  ],
+  'This Month': [
+    { name: 'Spanish Latte',          count: 218,  revenue: 1308.00 },
+    { name: 'Iced Caramel Macchiato', count: 172,  revenue: 1118.00 },
+    { name: 'Cappuccino',             count: 145,  revenue: 725.00  },
+    { name: 'Mocha Frappe',           count: 128,  revenue: 896.00  },
+    { name: 'Espresso Shot',          count: 98,   revenue: 392.00  },
+  ],
+  'This Year': [
+    { name: 'Spanish Latte',          count: 2450, revenue: 14700.00 },
+    { name: 'Iced Caramel Macchiato', count: 1980, revenue: 12870.00 },
+    { name: 'Cappuccino',             count: 1720, revenue: 8600.00  },
+    { name: 'Mocha Frappe',           count: 1540, revenue: 10780.00 },
+    { name: 'Espresso Shot',          count: 1180, revenue: 4720.00  },
+  ],
 };
 
 // ─── Period filter ────────────────────────────────────────────────────────────
@@ -163,14 +182,15 @@ export function useAnalytics(period: AnalyticsPeriod): AnalyticsResult {
   );
 
   // Only paid orders contribute to revenue (paymentStatus set exclusively by Payment.tsx)
+  // Financial rule: filter completed orders by the date they were actually PAID (paidAt) rather than created.
   const completedPeriod = useMemo(
-    () => periodOrders.filter(o => o.paymentStatus === 'Paid'),
-    [periodOrders],
+    () => orders.filter(o => o.paymentStatus === 'Paid' && inPeriod(o.paidAt || o.createdAt, period)),
+    [orders, period],
   );
 
-  // Sum of real completed-order revenue in the period (including 10% tax)
+  // Sum of real completed-order revenue in the period (including tax)
   const realRevenue = useMemo(
-    () => completedPeriod.reduce((s, o) => s + o.totalAmount * 1.1, 0),
+    () => completedPeriod.reduce((s, o) => s + o.totalAmount * (1 + getTaxRate()), 0),
     [completedPeriod],
   );
 
@@ -192,9 +212,9 @@ export function useAnalytics(period: AnalyticsPeriod): AnalyticsResult {
     const realCount = new Array(cfg.labels.length).fill(0);
 
     completedPeriod.forEach(o => {
-      const idx = cfg.getBucket(new Date(o.createdAt));
+      const idx = cfg.getBucket(new Date(o.paidAt || o.createdAt));
       if (idx >= 0 && idx < cfg.labels.length) {
-        realRev[idx]   += o.totalAmount * 1.1;
+        realRev[idx]   += o.totalAmount * (1 + getTaxRate());
         realCount[idx] += 1;
       }
     });
@@ -221,7 +241,7 @@ export function useAnalytics(period: AnalyticsPeriod): AnalyticsResult {
         order.items.forEach(item => {
           if (!map[item.name]) map[item.name] = { name: item.name, count: 0, revenue: 0 };
           map[item.name].count   += item.quantity;
-          map[item.name].revenue += item.quantity * item.price * 1.1;
+          map[item.name].revenue += item.quantity * item.price * (1 + getTaxRate());
         }),
       );
     } else {
@@ -234,7 +254,7 @@ export function useAnalytics(period: AnalyticsPeriod): AnalyticsResult {
         order.items.forEach(item => {
           if (!map[item.name]) map[item.name] = { name: item.name, count: 0, revenue: 0 };
           map[item.name].count   += item.quantity;
-          map[item.name].revenue += item.quantity * item.price * 1.1;
+          map[item.name].revenue += item.quantity * item.price * (1 + getTaxRate());
         }),
       );
     }

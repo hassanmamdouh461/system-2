@@ -17,8 +17,8 @@ import { Client, Databases } from 'appwrite';
 
 export const APPWRITE_CONFIG = {
     ENDPOINT: 'https://fra.cloud.appwrite.io/v1',
-    PROJECT_ID: '698232950032f12e7895',
-    DB_ID: 'restaurant_db',
+    PROJECT_ID: '69879ae70002444f3f38',
+    DB_ID: '6a545eb00016d126bc82',
     COLLECTIONS: {
         MENU: 'menu_items',
         ORDERS: 'orders'
@@ -101,3 +101,29 @@ export async function directDelete(
         throw new Error((err as any).message || `HTTP ${res.status}`);
     }
 }
+
+/**
+ * Direct REST API GET call to list documents - bypasses the SDK serializer bug in v22.
+ */
+export async function directList(
+    collectionId: string,
+    queries: string[] = []
+): Promise<{ documents: any[]; total: number }> {
+    let url = `${APPWRITE_CONFIG.ENDPOINT}/databases/${APPWRITE_CONFIG.DB_ID}/collections/${collectionId}/documents`;
+    if (queries.length > 0) {
+        const queryParams = queries.map((q, idx) => `queries[${idx}]=${encodeURIComponent(q)}`).join('&');
+        url += `?${queryParams}`;
+    }
+    const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-Appwrite-Project': APPWRITE_CONFIG.PROJECT_ID,
+        },
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as any).message || `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+

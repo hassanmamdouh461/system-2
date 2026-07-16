@@ -4,9 +4,9 @@ import { INITIAL_MENU_ITEMS } from '../src/types/menu';
 // Configuration
 const CONFIG = {
     ENDPOINT: 'https://fra.cloud.appwrite.io/v1',
-    PROJECT_ID: '698232950032f12e7895',
-    API_KEY: 'standard_0c5b62f15aec8f667d6da508e5c11474142b2143980c79b432db999b20928314c22df32ca7a0b9bad2763995e64c9b062b4bb8aa34b1c0f0ac8ccaa66570ab92430de8c39df304ac8963025fd4a3a4ea7ac9d57d450305bf845bf496a2617f80ba673cb4bdb95dd58b52246cc0b4d84a2fa49220816e74bcbd34e64f408f86a6',
-    DB_ID: 'restaurant_db',
+    PROJECT_ID: '69879ae70002444f3f38',
+    API_KEY: 'standard_394133abbb528c973b60223692f4fae4610de3f328bf8da5312c97214095bed5e4a50cbd2c9102ce4413d98016a78e6fdfea72430189292101d8b26d2b8b12e7e46b4666f5b9b0096ba730ff1c6a95344f37ee01180bc0da360aadf8deaffb031d372780907ec0b0727c5807eb4f199ef52e319bfb876c9e74991e4df260b1e0',
+    DB_ID: '6a545eb00016d126bc82',
 };
 
 // ─── Demo Orders ──────────────────────────────────────────────────────────────
@@ -205,6 +205,28 @@ async function main() {
         if (e.code === 409) console.log('ℹ️  Orders Collection already exists');
     }
 
+    // 3.5. Create Customers Collection (idempotent)
+    const customersCollId = 'customers';
+    try {
+        await db.createCollection(CONFIG.DB_ID, customersCollId, 'Customers', [
+            Permission.read(Role.any()),
+            Permission.write(Role.any()),
+        ]);
+        console.log('✅ Customers Collection created');
+
+        await db.createStringAttribute(CONFIG.DB_ID, customersCollId, 'name', 255, true);
+        await db.createStringAttribute(CONFIG.DB_ID, customersCollId, 'phone', 50, true);
+        await db.createFloatAttribute(CONFIG.DB_ID, customersCollId, 'points', false, 0);
+        await db.createStringAttribute(CONFIG.DB_ID, customersCollId, 'createdAt', 100, true);
+        await db.createStringAttribute(CONFIG.DB_ID, customersCollId, 'branchId', 50, false);
+
+        console.log('⏳ Waiting for attributes to index...');
+        await wait(2000);
+    } catch (e: any) {
+        if (e.code === 409) console.log('ℹ️  Customers Collection already exists');
+        else console.error('Error creating customers collection:', e);
+    }
+
     // 4. Clear menu then re-seed (prevents duplicates on repeated runs)
     console.log('\n🧹 Clearing existing menu items...');
     await clearCollection(menuCollId);
@@ -228,7 +250,11 @@ async function main() {
 
     console.log('\n🎬 Inserting demo orders (3 New · 2 Preparing · 3 Ready · all Unpaid)...');
     for (const order of DEMO_ORDERS) {
-        await db.createDocument(CONFIG.DB_ID, ordersCollId, ID.unique(), order);
+        await db.createDocument(CONFIG.DB_ID, ordersCollId, ID.unique(), {
+            ...order,
+            branch_id: 'branch_1',
+            payment_method: 'Cash'
+        });
         console.log(`   + ${order.orderNumber}  [${order.status}]  $${order.totalAmount.toFixed(2)}`);
     }
 

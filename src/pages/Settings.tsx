@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, Store, Bell, Lock, HelpCircle, LogOut, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DatabaseStatus } from '../components/ui/DatabaseStatus';
+import { SyncStatus } from '../components/ui/SyncStatus';
 import { useAuth } from '../context/AuthContext';
 import { QrMenuModal } from '../components/settings/QrMenuModal';
 
@@ -32,14 +33,7 @@ export default function Settings() {
     {
       title: 'App Settings',
       items: [
-        { icon: Bell, label: 'Notifications', desc: 'Configure alert preferences' },
         { icon: Lock, label: 'Privacy & Security', desc: 'Update password and controls' },
-      ]
-    },
-    {
-      title: 'Support',
-      items: [
-        { icon: HelpCircle, label: 'Help & Support', desc: 'Get help with using the app' },
       ]
     }
   ];
@@ -83,14 +77,23 @@ export default function Settings() {
           </motion.div>
         ))}
 
-        {/* Database Connection Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <DatabaseStatus />
-        </motion.div>
+        {/* Database & Sync Connection Status */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <DatabaseStatus />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.33 }}
+          >
+            <SyncStatus />
+          </motion.div>
+        </div>
 
         <motion.button 
            initial={{ opacity: 0 }}
